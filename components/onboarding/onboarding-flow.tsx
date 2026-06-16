@@ -16,6 +16,8 @@ import { Progress } from '@/components/ui/progress'
 import { Logo } from '@/components/logo'
 import { environments, interestOptions } from '@/lib/data'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { userService } from './user.service'
 
 const avatars = [
   '/images/avatar-a.png',
@@ -38,6 +40,7 @@ export function OnboardingFlow() {
   const [envs, setEnvs] = useState<string[]>([])
   const [avatar, setAvatar] = useState<string | null>(null)
   const [photo, setPhoto] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const progress = ((step + 1) / steps.length) * 100
   const isLast = step === steps.length - 1
@@ -50,9 +53,21 @@ export function OnboardingFlow() {
     )
   }
 
-  function next() {
+  async function next() {
     if (isLast) {
-      router.push('/dashboard')
+      setIsLoading(true)
+      try {
+        await userService.updateCurrentUser({
+          interests: interests,
+          avatarUrl: avatar || undefined,
+        })
+        toast.success('Profile setup complete!')
+        router.push('/dashboard')
+      } catch (error) {
+        // Note: Specific error messages are automatically handled globally by api.ts
+      } finally {
+        setIsLoading(false)
+      }
     } else {
       setStep((s) => s + 1)
     }
@@ -259,8 +274,8 @@ export function OnboardingFlow() {
           <ArrowLeft data-icon="inline-start" />
           Back
         </Button>
-        <Button size="lg" onClick={next} disabled={!canProceed}>
-          {isLast ? 'Finish & explore' : 'Continue'}
+        <Button size="lg" onClick={next} disabled={!canProceed || isLoading}>
+          {isLoading ? 'Saving...' : isLast ? 'Finish & explore' : 'Continue'}
           {!isLast && <ArrowRight data-icon="inline-end" />}
         </Button>
       </div>
