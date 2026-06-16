@@ -1,5 +1,5 @@
-import { ActiveDateView } from '@/components/date/active-date-view'
+import { MatchProfileView } from '@/components/matches/match-profile-view'
 
-export default function ActiveDatePage() {
-  return <ActiveDateView />
+export default function MatchProfilePage() {
+  return <MatchProfileView />
 }
