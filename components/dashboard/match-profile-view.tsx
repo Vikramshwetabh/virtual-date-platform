@@ -3,9 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  Activity,
   ArrowLeft,
-  Book,
   Calendar,
   CheckCircle2,
   Heart,
