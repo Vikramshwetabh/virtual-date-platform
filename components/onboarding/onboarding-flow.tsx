@@ -58,14 +58,20 @@ export function OnboardingFlow() {
     }
   }
 
+  const canProceed =
+    (step === 0) || // Profile photo can be skipped for now
+    (step === 1 && interests.length > 0) ||
+    (step === 2 && envs.length > 0) ||
+    (step === 3 && avatar !== null)
+
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-8">
       <header className="flex items-center justify-between">
         <Link href="/" aria-label="Virtual Date home">
           <Logo />
         </Link>
-        <Button variant="ghost" render={<Link href="/dashboard" />}>
-          Skip for now
+        <Button variant="ghost" asChild>
+          <Link href="/dashboard">Skip for now</Link>
         </Button>
       </header>
 
@@ -253,7 +259,7 @@ export function OnboardingFlow() {
           <ArrowLeft data-icon="inline-start" />
           Back
         </Button>
-        <Button size="lg" onClick={next}>
+        <Button size="lg" onClick={next} disabled={!canProceed}>
           {isLast ? 'Finish & explore' : 'Continue'}
           {!isLast && <ArrowRight data-icon="inline-end" />}
         </Button>

@@ -3,13 +3,13 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  HeartIcon,
-  HomeIcon,
-  MessageCircleHeartIcon,
-  CalendarIcon,
-  SettingsIcon,
-  SparklesIcon,
-  LogOutIcon,
+  Heart,
+  Home,
+  MessageCircleHeart,
+  Calendar,
+  Settings,
+  Sparkles,
+  LogOut,
 } from "lucide-react"
 
 import { Logo } from "@/components/logo"
@@ -30,14 +30,14 @@ import {
 } from "@/components/ui/sidebar"
 
 const mainNav = [
-  { title: "Discover", href: "/dashboard", icon: HomeIcon },
-  { title: "Matches", href: "/dashboard/matches", icon: HeartIcon, badge: "3" },
-  { title: "Messages", href: "/dashboard/messages", icon: MessageCircleHeartIcon },
-  { title: "Upcoming Dates", href: "/dashboard/dates", icon: CalendarIcon },
+  { title: "Discover", href: "/dashboard", icon: Home },
+  { title: "Matches", href: "/dashboard/matches", icon: Heart, badge: "3" },
+  { title: "Messages", href: "/dashboard/messages", icon: MessageCircleHeart },
+  { title: "Upcoming Dates", href: "/dashboard/dates", icon: Calendar },
 ]
 
 const secondaryNav = [
-  { title: "Settings", href: "/dashboard/settings", icon: SettingsIcon },
+  { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
 export function AppSidebar() {
@@ -57,11 +57,9 @@ export function AppSidebar() {
             <SidebarMenu>
               {mainNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href}>
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
+                  <SidebarMenuButton render={<Link href={item.href} /> as any} isActive={pathname === item.href}>
+                    <item.icon />
+                    <span>{item.title}</span>
                   </SidebarMenuButton>
                   {item.badge ? <SidebarMenuBadge>{item.badge}</SidebarMenuBadge> : null}
                 </SidebarMenuItem>
@@ -75,11 +73,9 @@ export function AppSidebar() {
             <SidebarMenu>
               {secondaryNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href}>
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
+                  <SidebarMenuButton render={<Link href={item.href} /> as any} isActive={pathname === item.href}>
+                    <item.icon />
+                    <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -90,7 +86,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <div className="rounded-xl border border-border bg-gradient-to-br from-primary/15 to-accent/10 p-4">
               <div className="flex items-center gap-2">
-                <SparklesIcon className="size-4 text-primary" />
+                <Sparkles className="size-4 text-primary" />
                 <p className="text-sm font-semibold">Go Premium</p>
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
@@ -106,25 +102,21 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="h-auto py-2" asChild>
-              <Link href="/dashboard/settings">
-                <Avatar className="size-8">
-                  <AvatarImage src="/images/person-5.png" alt="Your profile" />
-                  <AvatarFallback>AR</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">Ava Reyes</span>
-                  <span className="text-xs text-muted-foreground">View profile</span>
-                </div>
-              </Link>
+            <SidebarMenuButton className="h-auto py-2" render={<Link href="/dashboard/settings" /> as any}>
+              <Avatar className="size-8">
+                <AvatarImage src="/images/person-5.png" alt="Your profile" />
+                <AvatarFallback>AR</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Ava Reyes</span>
+                <span className="text-xs text-muted-foreground">View profile</span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link href="/">
-                <LogOutIcon />
-                <span>Log out</span>
-              </Link>
+            <SidebarMenuButton render={<Link href="/" /> as any}>
+              <LogOut />
+              <span>Log out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
