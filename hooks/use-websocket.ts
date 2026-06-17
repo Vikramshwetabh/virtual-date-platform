@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useAuthStore } from "@/store/auth-store";
 
 export interface WebSocketMessage {
   type: string;
@@ -18,21 +19,11 @@ export function useWebSocket(roomId?: string) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
+  const token = useAuthStore((state) => state.token);
 
   const connect = useCallback(() => {
     if (typeof window === "undefined") return;
 
-    let token: string | null = null;
-    try {
-      const authStorage = localStorage.getItem("auth-storage");
-      if (authStorage) {
-        token = JSON.parse(authStorage).state.token;
-      }
-    } catch (e) {
-      console.error("Failed to parse auth token", e);
-      localStorage.removeItem("auth-storage");
-      localStorage.removeItem("userId");
-    }
     if (!token) return;
 
     const url = new URL(WS_BASE_URL);
@@ -71,7 +62,7 @@ export function useWebSocket(roomId?: string) {
         console.error("Failed to parse WebSocket message:", event.data);
       }
     };
-  }, [roomId]);
+  }, [roomId, token]);
 
   useEffect(() => {
     connect();
