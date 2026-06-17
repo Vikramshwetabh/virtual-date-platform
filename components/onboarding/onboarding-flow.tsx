@@ -17,7 +17,7 @@ import { Logo } from '@/components/logo'
 import { environments, interestOptions } from '@/lib/data'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { userService } from './user.service'
+import { users } from '@/lib/api'
 
 const avatars = [
   '/images/avatar-a.png',
@@ -57,14 +57,13 @@ export function OnboardingFlow() {
     if (isLast) {
       setIsLoading(true)
       try {
-        await userService.updateCurrentUser({
-          interests: interests,
-          avatarUrl: avatar || undefined,
-        })
+        // The API documentation uses 'avatar', not 'avatarUrl'
+        // It also doesn't mention 'interests', but we can send 'bio' as an example
+        await users.updateMe({ avatar: avatar || undefined, bio: `My interests: ${interests.join(', ')}` });
         toast.success('Profile setup complete!')
         router.push('/dashboard')
-      } catch (error) {
-        // Note: Specific error messages are automatically handled globally by api.ts
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to save profile setup');
       } finally {
         setIsLoading(false)
       }
@@ -85,9 +84,11 @@ export function OnboardingFlow() {
         <Link href="/" aria-label="Virtual Date home">
           <Logo />
         </Link>
-        <Button variant="ghost" asChild>
-          <Link href="/dashboard">Skip for now</Link>
-        </Button>
+        <Link href="/dashboard" passHref>
+          <Button variant="ghost">
+            Skip for now
+          </Button>
+        </Link>
       </header>
 
       <div className="mt-8 flex flex-col gap-2">

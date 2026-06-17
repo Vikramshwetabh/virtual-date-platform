@@ -1,5 +1,5 @@
-import { EnvironmentSelectionView } from '@/components/onboarding/environment-selection-view';
+import { MatchesView } from './matches-view';
 
-export default function EnvironmentSelectionPage() {
-  return <EnvironmentSelectionView />;
+export default function MatchesPage() {
+  return <MatchesView />;
 }

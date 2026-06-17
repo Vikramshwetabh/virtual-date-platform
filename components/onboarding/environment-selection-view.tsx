@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { roomService } from './room.service'
+import { rooms } from '@/lib/api'
 import { toast } from 'sonner'
 
 // Enhance the existing environment data with page-specific features
@@ -56,15 +56,14 @@ export function EnvironmentSelectionView() {
   const handleStartDate = async () => {
     setIsLoading(true)
     try {
-      const room = await roomService.createRoom({
-        name: `${selectedEnv.name} Date`,
-        environmentType: selectedEnv.id,
+      const room = await rooms.create({
+        roomType: selectedEnv.id as any,
       })
       toast.success('Virtual date room created!')
       // Redirect dynamically to the newly created room ID
-      router.push(`/dashboard/date/${room.id}`)
-    } catch (error) {
-      // Specific error messages are automatically handled by the global api.ts interceptor
+      router.push(`/chat/${room.id}`)
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create virtual date room');
     } finally {
       setIsLoading(false)
     }

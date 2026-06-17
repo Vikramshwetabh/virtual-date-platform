@@ -21,9 +21,9 @@ async function fetchApi<T>(endpoint: string, options: FetchOptions = {}): Promis
   const { data, headers: customHeaders, ...customOptions } = options;
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...customHeaders,
+    ...(customHeaders as Record<string, string> | undefined),
   };
 
   if (token) {

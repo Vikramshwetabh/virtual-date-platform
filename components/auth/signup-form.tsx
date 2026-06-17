@@ -44,7 +44,7 @@ export function SignupForm() {
       toast.success('Account created successfully!');
       router.push('/onboarding');
     } catch (error: any) {
-      // Global error handling in api.ts takes care of toast notifications
+      toast.error(error.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
     }

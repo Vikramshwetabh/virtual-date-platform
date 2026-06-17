@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuthStore } from '@/components/onboarding/auth-store';
+import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -38,11 +38,11 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       await login(data);
-      await fetchCurrentUser();
+      await fetchCurrentUser(); // This will now be called after token is set
       toast.success('Logged in successfully!');
       router.push('/dashboard');
     } catch (error: any) {
-      // Specific error messages (400, 401, 409, 500) are automatically handled by the global api.ts interceptor
+      toast.error(error.message || 'Failed to log in');
     } finally {
       setIsLoading(false);
     }

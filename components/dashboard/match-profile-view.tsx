@@ -19,28 +19,81 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { matches, environments } from '@/lib/data'
+import { users, invitations } from '@/lib/api'
+import { toast } from 'sonner'
+import { useState, useEffect } from 'react'
 
-// For demonstration, we'll use Maya (matches[0])
-const match = matches[0]
 const suggestedEnvironments = environments.slice(0, 4)
 
-export function MatchProfileView() {
+export function MatchProfileView({ matchId }: { matchId?: string }) {
+  const [profile, setProfile] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedEnv, setSelectedEnv] = useState<string>(suggestedEnvironments[0].id)
+  const [isInviting, setIsInviting] = useState(false)
+
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!matchId) {
+        setProfile(matches[0]); // Fallback to mock if no ID provided
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const data = await users.getProfile(matchId)
+        setProfile(data)
+      } catch (err: any) {
+        setError(err.message || 'Failed to load profile')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchProfile()
+  }, [matchId])
+
+  const handleInvite = async () => {
+    if (!profile?.id) return;
+    setIsInviting(true);
+    try {
+      await invitations.create({
+        receiverId: profile.id,
+        environmentType: selectedEnv
+      });
+      toast.success('Invitation sent');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send invitation');
+    } finally {
+      setIsInviting(false);
+    }
+  }
+
+  if (isLoading) return <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground"><span className="animate-spin mr-2">⏳</span> Loading profile...</div>
+  if (error) return <div className="flex min-h-[60vh] items-center justify-center text-red-500">{error}</div>
+  if (!profile) return <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">Profile not found.</div>
+
+  const match = {
+    ...matches[0], // map missing API elements to UI placeholders for aesthetics
+    ...profile,
+    name: profile.name || matches[0].name,
+    image: profile.avatar || matches[0].image,
+    bio: profile.bio || matches[0].bio,
+  }
+
   return (
     <div className="min-h-screen bg-background px-4 py-6 md:p-8 lg:p-12">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full bg-secondary/50 backdrop-blur-sm hover:bg-secondary"
-            asChild
-          >
-            <Link href="/dashboard/matches">
+          <Link href="/dashboard" passHref>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full bg-secondary/50 backdrop-blur-sm hover:bg-secondary"
+            >
               <ArrowLeft className="size-5" />
               <span className="sr-only">Back</span>
-            </Link>
-          </Button>
+            </Button>
+          </Link>
 
           <div className="flex items-center gap-3">
             <Badge
@@ -93,13 +146,12 @@ export function MatchProfileView() {
               <div className="flex flex-col gap-3">
                 <Button
                   size="lg"
-                  className="h-14 rounded-2xl bg-primary text-base font-semibold shadow-xl shadow-primary/25 transition-transform hover:scale-[1.02]"
-                  asChild
+                  onClick={handleInvite}
+                  disabled={isInviting}
+                  className="w-full h-14 rounded-2xl bg-primary text-base font-semibold shadow-xl shadow-primary/25 transition-transform hover:scale-[1.02]"
                 >
-                  <Link href="/dashboard/date/active">
-                    <Video className="mr-2 size-5" />
-                    Invite to Virtual Date
-                  </Link>
+                  {isInviting ? <span className="animate-spin mr-2">⏳</span> : <Video className="mr-2 size-5" />}
+                  Invite to Virtual Date
                 </Button>
                 <div className="grid grid-cols-2 gap-3">
                   <Button
@@ -204,7 +256,8 @@ export function MatchProfileView() {
                 {suggestedEnvironments.map((env) => (
                   <div
                     key={env.id}
-                    className="group relative flex cursor-pointer items-end overflow-hidden rounded-2xl border border-border/50 bg-card p-4 transition-all hover:border-primary/50 hover:shadow-lg"
+                    onClick={() => setSelectedEnv(env.id)}
+                    className={`group relative flex cursor-pointer items-end overflow-hidden rounded-2xl border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-lg ${selectedEnv === env.id ? 'border-primary ring-2 ring-primary' : 'border-border/50'}`}
                   >
                     <div className="absolute inset-0 z-0">
                       <Image
