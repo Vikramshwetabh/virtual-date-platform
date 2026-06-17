@@ -16,7 +16,7 @@ export function normalizeHttpMessage(message: ApiChatMessage): DisplayChatMessag
 }
 
 export function normalizeWebSocketMessage(message: WebSocketMessage): DisplayChatMessage | null {
-  if (message.type !== 'chat:send' || !message.userId) {
+  if (message.type !== 'message' || !message.userId) {
     return null
   }
 

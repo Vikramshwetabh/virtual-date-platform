@@ -34,20 +34,20 @@ export default function VirtualDateRoom({ roomId }: VirtualDateRoomProps) {
   // Merge incoming live messages with history
   const displayMessages = [
     ...chatHistory,
-    ...messages.filter((m) => m.type === "chat:send")
+    ...messages.filter((m) => m.type === "message")
   ];
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
     
-    send("chat:send", { content: inputText });
+    send("message", { content: inputText });
     setInputText("");
   };
 
   const handlePlayMusic = () => {
     // Example song ID - you would typically let the user select this from the /songs endpoint
-    send("music:play", { songId: "550e8400-e29b-41d4-a716-446655440003" });
+    send("music_play", { songId: "550e8400-e29b-41d4-a716-446655440003" });
   };
 
   return (
@@ -65,7 +65,7 @@ export default function VirtualDateRoom({ roomId }: VirtualDateRoomProps) {
           <button onClick={handlePlayMusic} className="p-2 hover:bg-slate-200 rounded-full transition-colors" title="Play Music">
             <Music className="w-5 h-5" />
           </button>
-          <button onClick={() => send("music:pause")} className="p-2 hover:bg-slate-200 rounded-full transition-colors" title="Pause Music">
+          <button onClick={() => send("music_pause")} className="p-2 hover:bg-slate-200 rounded-full transition-colors" title="Pause Music">
             <PauseCircle className="w-5 h-5" />
           </button>
         </div>

@@ -43,6 +43,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   const [audioOffset, setAudioOffset] = useState<number>(0);
 
   const { connected, messages, send } = useWebSocket(roomId)
+
   const [chatHistory, setChatHistory] = useState<DisplayChatMessage[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -85,7 +86,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
 
   // Listen for Match Outcome
   useEffect(() => {
-    const outcomeMessage = messages.find(m => m.type === "match:outcome" && m.roomId === roomId);
+    const outcomeMessage = messages.find(m => m.type === "match_outcome_ready" && m.roomId === roomId);
     if (outcomeMessage && !isOutcomeModalOpen) {
       setOutcomeData(outcomeMessage.payload);
       setIsOutcomeModalOpen(true);
@@ -95,15 +96,14 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   // Listen for Music Events
   useEffect(() => {
     const latestMsg = messages[messages.length - 1];
-    if (latestMsg?.type === "music:play") {
+    if (latestMsg?.type === "music_started") {
       setIsPlaying(true);
       if (latestMsg.payload?.startedAt) {
         setAudioOffset(Math.max(0, (Date.now() - new Date(latestMsg.payload.startedAt).getTime()) / 1000));
       } else {
         setAudioOffset(0);
       }
-    }
-    if (latestMsg?.type === "music:pause") {
+    } else if (latestMsg?.type === "music_paused") {
       setIsPlaying(false);
     }
   }, [messages]);
@@ -448,7 +448,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
               onSubmit={(e) => {
                 e.preventDefault()
                 if (message.trim()) {
-                  send("chat:send", { content: message.trim() });
+                  send("message", { content: message.trim() });
                   setMessage('')
                 }
               }}
