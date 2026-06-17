@@ -17,6 +17,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: any) => Promise<void>;
+  signup: (credentials: any) => Promise<void>;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -37,6 +38,10 @@ export const useAuthStore = create<AuthState>()(
       login: async (credentials) => {
         const { token } = await auth.login(credentials);
         set({ token, isLoading: true });
+      },
+
+      signup: async (credentials) => {
+        await auth.signup(credentials);
       },
 
       fetchCurrentUser: async () => {
