@@ -1,13 +1,13 @@
-import { AuthShell } from '@/components/auth/auth-shell'
-import { AuthForm } from '@/components/auth/auth-form'
+import React from 'react';
+import { SignupForm } from '@/components/auth/signup-form';
+import { GuestGuard } from '@/components/auth/guest-guard';
 
 export default function SignupPage() {
   return (
-    <AuthShell
-      title="Create your account"
-      subtitle="Start dating the Virtual Date way — meet before you meet."
-    >
-      <AuthForm mode="signup" />
-    </AuthShell>
-  )
+    <GuestGuard>
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <SignupForm />
+      </div>
+    </GuestGuard>
+  );
 }

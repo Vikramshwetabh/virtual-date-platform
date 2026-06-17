@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   CheckCircle2,
   Clock,
@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { rooms } from '@/lib/api'
+import { toast } from 'sonner'
 
 // Enhance the existing environment data with page-specific features
 const enhancedEnvironments = environments.map((env) => {
@@ -48,6 +50,24 @@ const enhancedEnvironments = environments.map((env) => {
 
 export function EnvironmentSelectionView() {
   const [selectedEnv, setSelectedEnv] = useState(enhancedEnvironments[0])
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+
+  const handleStartDate = async () => {
+    setIsLoading(true)
+    try {
+      const room = await rooms.create({
+        roomType: selectedEnv.id as any,
+      })
+      toast.success('Virtual date room created!')
+      // Redirect dynamically to the newly created room ID
+      router.push(`/chat/${room.id}`)
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create virtual date room');
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="dark min-h-screen bg-background text-foreground selection:bg-primary/30">
@@ -214,12 +234,11 @@ export function EnvironmentSelectionView() {
                   <Button
                     size="lg"
                     className="mt-2 h-14 w-full rounded-xl bg-primary text-base font-semibold shadow-xl shadow-primary/25 transition-transform hover:scale-[1.02]"
-                    asChild
+                    onClick={handleStartDate}
+                    disabled={isLoading}
                   >
-                    <Link href="/dashboard/date/active">
-                      Start Virtual Date
-                      <Play className="ml-2 size-5" />
-                    </Link>
+                    {isLoading ? 'Creating Room...' : 'Start Virtual Date'}
+                    {!isLoading && <Play className="ml-2 size-5" />}
                   </Button>
                   <p className="text-center text-xs text-muted-foreground">
                     Your video will not turn on automatically.

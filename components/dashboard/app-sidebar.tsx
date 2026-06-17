@@ -31,13 +31,13 @@ import {
 
 const mainNav = [
   { title: "Discover", href: "/dashboard", icon: Home },
-  { title: "Matches", href: "/dashboard/matches", icon: Heart, badge: "3" },
-  { title: "Messages", href: "/dashboard/messages", icon: MessageCircleHeart },
-  { title: "Upcoming Dates", href: "/dashboard/dates", icon: Calendar },
+  { title: "Matches", href: "/dashboard", icon: Heart, badge: "3" },
+  { title: "Messages", href: "/dashboard", icon: MessageCircleHeart },
+  { title: "Upcoming Dates", href: "/dashboard", icon: Calendar },
 ]
 
 const secondaryNav = [
-  { title: "Settings", href: "/dashboard/settings", icon: Settings },
+  { title: "Settings", href: "/profile", icon: Settings },
 ]
 
 export function AppSidebar() {
@@ -57,7 +57,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {mainNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton render={<Link href={item.href} /> as any} isActive={pathname === item.href}>
+                  <SidebarMenuButton render={<Link href={item.href} /> as any} nativeButton={false} isActive={pathname === item.href}>
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
@@ -73,7 +73,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {secondaryNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton render={<Link href={item.href} /> as any} isActive={pathname === item.href}>
+                  <SidebarMenuButton render={<Link href={item.href} /> as any} nativeButton={false} isActive={pathname === item.href}>
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
@@ -102,7 +102,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="h-auto py-2" render={<Link href="/dashboard/settings" /> as any}>
+            <SidebarMenuButton className="h-auto py-2" render={<Link href="/profile" /> as any} nativeButton={false}>
               <Avatar className="size-8">
                 <AvatarImage src="/images/person-5.png" alt="Your profile" />
                 <AvatarFallback>AR</AvatarFallback>
@@ -114,7 +114,7 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton render={<Link href="/" /> as any}>
+            <SidebarMenuButton render={<Link href="/" /> as any} nativeButton={false}>
               <LogOut />
               <span>Log out</span>
             </SidebarMenuButton>
