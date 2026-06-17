@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuthStore } from '@/components/onboarding/auth-store';
+import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
   const router = useRouter();
-  const { signup, fetchCurrentUser } = useAuthStore();
+  const { signup } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -40,9 +40,8 @@ export function SignupForm() {
     setIsLoading(true);
     try {
       await signup(data);
-      await fetchCurrentUser();
-      toast.success('Account created successfully!');
-      router.push('/onboarding');
+      toast.success('Account created successfully! Please log in.');
+      router.push('/login');
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
     } finally {

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { socketClient } from './socket';
-import { useAuthStore } from './auth-store';
+import { useAuthStore } from '@/store/auth-store';
 
 export function useSocket() {
   const { isAuthenticated } = useAuthStore();
