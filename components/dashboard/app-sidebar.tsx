@@ -57,7 +57,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {mainNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton render={<Link href={item.href} /> as any} nativeButton={false} isActive={pathname === item.href}>
+                  <SidebarMenuButton render={<Link href={item.href} /> as any} nativeButton={false} isActive={pathname === item.href || pathname.startsWith(`${item.href}/`)}>
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
@@ -73,7 +73,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {secondaryNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton render={<Link href={item.href} /> as any} nativeButton={false} isActive={pathname === item.href}>
+                  <SidebarMenuButton render={<Link href={item.href} /> as any} nativeButton={false} isActive={pathname === item.href || pathname.startsWith(`${item.href}/`)}>
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>

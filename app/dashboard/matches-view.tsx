@@ -1,23 +1,25 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Invitation } from '@/components/onboarding/index';
 import { invitations as apiInvitations } from '@/lib/api';
-import { useWebSocket } from '@/hooks/use-websocket';
+import { enrichInvitationsWithSenders } from '@/lib/invitation-utils';
+import type { EnrichedInvitation } from '@/lib/types/api';
 import { InvitationCard } from './invitation-card';
 import { CalendarHeart, Inbox } from 'lucide-react';
 
+const POLL_INTERVAL_MS = 15000;
+
 export function MatchesView() {
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [invitations, setInvitations] = useState<EnrichedInvitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { messages } = useWebSocket(); // Global hub connection
 
   const fetchInvitations = useCallback(async () => {
     try {
       const data = await apiInvitations.getPending();
-      setInvitations(data.invitations || []);
+      const enriched = await enrichInvitationsWithSenders(data.invitations ?? []);
+      setInvitations(enriched);
     } catch (error) {
-      // Fallback handled globally
+      // Errors are surfaced by the API client.
     } finally {
       setIsLoading(false);
     }
@@ -25,15 +27,18 @@ export function MatchesView() {
 
   useEffect(() => {
     fetchInvitations();
-  }, [fetchInvitations]);
+    const interval = setInterval(fetchInvitations, POLL_INTERVAL_MS);
 
-  useEffect(() => {
-    // If a new invitation comes via the websocket global hub, refresh
-    const latestMsg = messages[messages.length - 1];
-    if (latestMsg?.type === "invitation:received" || latestMsg?.type === "invitation:accepted") {
+    const handleFocus = () => {
       fetchInvitations();
-    }
-  }, [messages, fetchInvitations]);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchInvitations]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">

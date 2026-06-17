@@ -1,4 +1,15 @@
 import { toast } from "sonner";
+import type {
+  ApiChatMessage,
+  ApiInvitation,
+  ApiInvitationsResponse,
+  ApiMatchOutcome,
+  ApiRoom,
+  ApiRoomMember,
+  ApiUser,
+  EnvironmentType,
+  SecondDateChoice,
+} from "@/lib/types/api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://virtual-date-api.onrender.com/api/v1";
 
@@ -43,7 +54,7 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     let errorMessage = `API error: ${res.status}`;
     try {
       const errorData = await res.json();
-      errorMessage = errorData.message || errorMessage;
+      errorMessage = errorData.error || errorData.message || errorMessage;
     } catch (e) {
       // Ignore JSON parse errors for non-JSON error responses
     }
@@ -65,11 +76,11 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     throw error;
   }
 
-  // Handle empty responses (204 No Content or endpoints explicitly returning no body)
+  // Handle empty responses (204 No Content or endpoints with no body)
   if (res.status === 204) return null as T;
-  
+
   const text = await res.text();
-  return text ? JSON.parse(text) : null;
+  return text ? JSON.parse(text) : (null as T);
 }
 
 export const auth = {
@@ -80,24 +91,24 @@ export const auth = {
 };
 
 export const users = {
-  getMe: () => apiRequest<any>("/users/me"),
-  updateMe: (data: Record<string, any>) => 
-    apiRequest<any>("/users/me", { method: "PUT", body: JSON.stringify(data) }),
-  getProfile: (id: string) => apiRequest<any>(`/users/${id}`),
+  getMe: () => apiRequest<ApiUser>("/users/me"),
+  updateMe: (data: Partial<Pick<ApiUser, "name" | "bio" | "avatar">>) =>
+    apiRequest<ApiUser>("/users/me", { method: "PUT", body: JSON.stringify(data) }),
+  getProfile: (id: string) => apiRequest<ApiUser>(`/users/${id}`),
 };
 
 export const rooms = {
-  create: (data: { roomType: "coffee" | "library" | "park" | "gallery" | "beach" }) => 
-    apiRequest<any>("/rooms", { method: "POST", body: JSON.stringify(data) }),
-  get: (id: string) => apiRequest<any>(`/rooms/${id}`),
+  create: (data: { roomType: EnvironmentType }) =>
+    apiRequest<ApiRoom>("/rooms", { method: "POST", body: JSON.stringify(data) }),
+  get: (id: string) => apiRequest<ApiRoom>(`/rooms/${id}`),
   join: (id: string) => apiRequest<{ message: string }>(`/rooms/${id}/join`, { method: "POST" }),
   leave: (id: string) => apiRequest<{ message: string }>(`/rooms/${id}/leave`, { method: "POST" }),
-  getMembers: (id: string) => apiRequest<{ members: any[] }>(`/rooms/${id}/members`),
+  getMembers: (id: string) => apiRequest<{ members: ApiRoomMember[] }>(`/rooms/${id}/members`),
 };
 
 export const chat = {
   getMessages: (roomId: string, page = 1, limit = 50) =>
-    apiRequest<{ messages: any[] }>(`/rooms/${roomId}/messages?page=${page}&limit=${limit}`),
+    apiRequest<{ messages: ApiChatMessage[] }>(`/rooms/${roomId}/messages?page=${page}&limit=${limit}`),
 };
 
 export const music = {
@@ -110,17 +121,17 @@ export const music = {
 };
 
 export const feedback = {
-  submit: (data: { roomId: string, enjoyedDate: boolean, secondDateChoice: "yes" | "maybe" | "no" }) => 
-    apiRequest<any>("/feedback", { method: "POST", body: JSON.stringify(data) }),
-  getMyFeedback: (roomId: string) => apiRequest<any>(`/feedback/${roomId}`),
-  getOutcome: (roomId: string) => apiRequest<any>(`/outcomes/${roomId}`),
+  submit: (data: { roomId: string; enjoyedDate: boolean; secondDateChoice: SecondDateChoice }) =>
+    apiRequest("/feedback", { method: "POST", body: JSON.stringify(data) }),
+  getMyFeedback: (roomId: string) => apiRequest(`/feedback/${roomId}`),
+  getOutcome: (roomId: string) => apiRequest<ApiMatchOutcome>(`/outcomes/${roomId}`),
 };
 
 export const invitations = {
-  create: (data: { receiverId: string, environmentType: string }) => 
-    apiRequest<any>("/invitations", { method: "POST", body: JSON.stringify(data) }),
-  getPending: () => apiRequest<{ invitations: any[] }>("/invitations"),
-  accept: (id: string) => apiRequest<any>(`/invitations/${id}/accept`, { method: "POST" }),
+  create: (data: { receiverId: string; environmentType: EnvironmentType }) =>
+    apiRequest<ApiInvitation>("/invitations", { method: "POST", body: JSON.stringify(data) }),
+  getPending: () => apiRequest<ApiInvitationsResponse>("/invitations"),
+  accept: (id: string) => apiRequest<ApiInvitation>(`/invitations/${id}/accept`, { method: "POST" }),
   reject: (id: string) => apiRequest(`/invitations/${id}/reject`, { method: "POST" }),
 };
 

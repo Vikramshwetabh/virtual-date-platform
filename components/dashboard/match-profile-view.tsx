@@ -16,29 +16,48 @@ import {
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { matches, environments } from '@/lib/data'
+import { environments } from '@/lib/data'
 import { users, invitations } from '@/lib/api'
+import type { ApiUser, EnvironmentType } from '@/lib/types/api'
 import { toast } from 'sonner'
 import { useState, useEffect } from 'react'
 
 const suggestedEnvironments = environments.slice(0, 4)
 
-export function MatchProfileView({ matchId }: { matchId?: string }) {
-  const [profile, setProfile] = useState<any>(null)
+type UserProfile = ApiUser & {
+  interests?: string[]
+  compatibility?: number
+  age?: number
+  location?: string
+}
+
+function parseInterests(profile: UserProfile): string[] {
+  if (profile.interests?.length) {
+    return profile.interests
+  }
+  if (profile.bio?.toLowerCase().startsWith('my interests:')) {
+    return profile.bio
+      .slice('my interests:'.length)
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+  return []
+}
+
+export function MatchProfileView({ matchId }: { matchId: string }) {
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedEnv, setSelectedEnv] = useState<string>(suggestedEnvironments[0].id)
+  const [selectedEnv, setSelectedEnv] = useState<EnvironmentType>(suggestedEnvironments[0].id as EnvironmentType)
   const [isInviting, setIsInviting] = useState(false)
 
   useEffect(() => {
     async function fetchProfile() {
-      if (!matchId) {
-        setProfile(matches[0]); // Fallback to mock if no ID provided
-        setIsLoading(false);
-        return;
-      }
+      setIsLoading(true)
+      setError(null)
       try {
         const data = await users.getProfile(matchId)
         setProfile(data)
@@ -52,37 +71,55 @@ export function MatchProfileView({ matchId }: { matchId?: string }) {
   }, [matchId])
 
   const handleInvite = async () => {
-    if (!profile?.id) return;
-    setIsInviting(true);
+    if (!profile?.id) return
+    setIsInviting(true)
     try {
       await invitations.create({
         receiverId: profile.id,
-        environmentType: selectedEnv
-      });
-      toast.success('Invitation sent');
+        environmentType: selectedEnv,
+      })
+      toast.success('Invitation sent')
     } catch (err: any) {
-      toast.error(err.message || 'Failed to send invitation');
+      toast.error(err.message || 'Failed to send invitation')
     } finally {
-      setIsInviting(false);
+      setIsInviting(false)
     }
   }
 
-  if (isLoading) return <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground"><span className="animate-spin mr-2">⏳</span> Loading profile...</div>
-  if (error) return <div className="flex min-h-[60vh] items-center justify-center text-red-500">{error}</div>
-  if (!profile) return <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">Profile not found.</div>
-
-  const match = {
-    ...matches[0], // map missing API elements to UI placeholders for aesthetics
-    ...profile,
-    name: profile.name || matches[0].name,
-    image: profile.avatar || matches[0].image,
-    bio: profile.bio || matches[0].bio,
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">
+        <span className="animate-spin mr-2">⏳</span> Loading profile...
+      </div>
+    )
   }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+        <p className="text-red-500">{error}</p>
+        <Button variant="outline" render={<Link href="/dashboard/discover" />}>
+          Back to Discover
+        </Button>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">
+        Profile not found.
+      </div>
+    )
+  }
+
+  const interests = parseInterests(profile)
+  const image = profile.avatar || '/images/person-1.png'
+  const compatibility = profile.compatibility
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 md:p-8 lg:p-12">
       <div className="mx-auto max-w-6xl">
-        {/* Header */}
         <header className="mb-8 flex items-center justify-between">
           <Link href="/dashboard/discover" passHref>
             <Button
@@ -101,48 +138,50 @@ export function MatchProfileView({ matchId }: { matchId?: string }) {
               className="border-primary/20 bg-primary/10 text-primary backdrop-blur-md"
             >
               <Heart className="mr-1.5 size-3.5 fill-primary" />
-              New Match
+              Match Profile
             </Badge>
-            <Badge
-              variant="outline"
-              className="border-border/50 bg-background/50 font-mono backdrop-blur-md"
-            >
-              <Sparkles className="mr-1.5 size-3.5 text-yellow-500" />
-              {match.compatibility}% Compatible
-            </Badge>
+            {typeof compatibility === 'number' ? (
+              <Badge
+                variant="outline"
+                className="border-border/50 bg-background/50 font-mono backdrop-blur-md"
+              >
+                <Sparkles className="mr-1.5 size-3.5 text-yellow-500" />
+                {compatibility}% Compatible
+              </Badge>
+            ) : null}
           </div>
         </header>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
-          {/* Left Column: Sticky Profile Card */}
           <div className="flex flex-col gap-6 lg:col-span-5 xl:col-span-4">
             <div className="sticky top-6 flex flex-col gap-6">
-              {/* Main Photo Card */}
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] shadow-2xl">
                 <Image
-                  src={match.image}
-                  alt={match.name}
+                  src={image}
+                  alt={profile.name}
                   fill
                   className="object-cover"
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                
+
                 <div className="absolute bottom-0 inset-x-0 flex flex-col gap-2 p-8 text-white">
                   <div className="flex items-center gap-2">
                     <h1 className="font-heading text-4xl font-bold tracking-tight">
-                      {match.name}, {match.age}
+                      {profile.name}
+                      {profile.age ? `, ${profile.age}` : ''}
                     </h1>
                     <CheckCircle2 className="size-6 text-blue-400" />
                   </div>
-                  <div className="flex items-center text-white/80">
-                    <MapPin className="mr-1.5 size-4" />
-                    <span className="text-sm font-medium">{match.location}</span>
-                  </div>
+                  {profile.location ? (
+                    <div className="flex items-center text-white/80">
+                      <MapPin className="mr-1.5 size-4" />
+                      <span className="text-sm font-medium">{profile.location}</span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex flex-col gap-3">
                 <Button
                   size="lg"
@@ -150,7 +189,11 @@ export function MatchProfileView({ matchId }: { matchId?: string }) {
                   disabled={isInviting}
                   className="w-full h-14 rounded-2xl bg-primary text-base font-semibold shadow-xl shadow-primary/25 transition-transform hover:scale-[1.02]"
                 >
-                  {isInviting ? <span className="animate-spin mr-2">⏳</span> : <Video className="mr-2 size-5" />}
+                  {isInviting ? (
+                    <span className="animate-spin mr-2">⏳</span>
+                  ) : (
+                    <Video className="mr-2 size-5" />
+                  )}
                   Invite to Virtual Date
                 </Button>
                 <div className="grid grid-cols-2 gap-3">
@@ -175,88 +218,87 @@ export function MatchProfileView({ matchId }: { matchId?: string }) {
             </div>
           </div>
 
-          {/* Right Column: Details */}
           <div className="flex flex-col gap-8 lg:col-span-7 xl:col-span-8">
-            
-            {/* Compatibility Card */}
-            <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-card to-background shadow-lg">
-              <CardContent className="p-8">
-                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                  <div className="flex flex-col gap-2">
-                    <h3 className="font-heading text-2xl font-semibold flex items-center gap-2">
-                      <Sparkles className="size-6 text-primary" /> 
-                      Highly Compatible
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Based on your shared love for indie film and quiet mornings.
-                    </p>
+            {typeof compatibility === 'number' ? (
+              <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-card to-background shadow-lg">
+                <CardContent className="p-8">
+                  <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-2">
+                      <h3 className="font-heading text-2xl font-semibold flex items-center gap-2">
+                        <Sparkles className="size-6 text-primary" />
+                        Compatibility
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Based on shared interests and date preferences.
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="font-heading text-4xl font-bold text-primary">
+                        {compatibility}%
+                      </span>
+                      <Progress value={compatibility} className="h-2 w-32" />
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className="font-heading text-4xl font-bold text-primary">
-                      {match.compatibility}%
-                    </span>
-                    <Progress value={match.compatibility} className="h-2 w-32" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ) : null}
 
-            {/* About Section */}
             <div className="flex flex-col gap-4">
-              <h3 className="font-heading text-xl font-semibold">About {match.name}</h3>
+              <h3 className="font-heading text-xl font-semibold">About {profile.name}</h3>
               <Card className="bg-card/40 backdrop-blur-md">
                 <CardContent className="p-6 text-lg leading-relaxed text-card-foreground/90">
-                  {match.bio}
+                  {profile.bio || 'No bio yet.'}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Interests Section */}
-            <div className="flex flex-col gap-6">
-              <h3 className="font-heading text-xl font-semibold">Interests & Vibe</h3>
-              
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Card className="bg-card/40 backdrop-blur-md">
-                  <CardContent className="flex flex-col gap-4 p-5">
-                    <div className="flex items-center gap-2 font-medium text-muted-foreground">
-                      <Heart className="size-4" /> Passions
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {match.interests.map((interest) => (
-                        <Badge key={interest} variant="secondary" className="px-3 py-1 text-sm">
-                          {interest}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+            {interests.length > 0 ? (
+              <div className="flex flex-col gap-6">
+                <h3 className="font-heading text-xl font-semibold">Interests & Vibe</h3>
 
-                <Card className="bg-card/40 backdrop-blur-md">
-                  <CardContent className="flex flex-col gap-4 p-5">
-                    <div className="flex items-center gap-2 font-medium text-muted-foreground">
-                      <Music className="size-4" /> Music & Media
-                    </div>
-                    <div className="flex flex-col gap-2 text-sm text-foreground">
-                      <p>• Indie Folk & Jazz Playlists</p>
-                      <p>• A24 Films & Documentaries</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Card className="bg-card/40 backdrop-blur-md">
+                    <CardContent className="flex flex-col gap-4 p-5">
+                      <div className="flex items-center gap-2 font-medium text-muted-foreground">
+                        <Heart className="size-4" /> Passions
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {interests.map((interest) => (
+                          <Badge key={interest} variant="secondary" className="px-3 py-1 text-sm">
+                            {interest}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-card/40 backdrop-blur-md">
+                    <CardContent className="flex flex-col gap-4 p-5">
+                      <div className="flex items-center gap-2 font-medium text-muted-foreground">
+                        <Music className="size-4" /> Interests
+                      </div>
+                      <div className="flex flex-col gap-2 text-sm text-foreground">
+                        {interests.slice(0, 3).map((interest) => (
+                          <p key={interest}>• {interest}</p>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </div>
+            ) : null}
 
-            {/* Suggested Environments */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading text-xl font-semibold">Suggested Dates</h3>
-                <span className="text-sm text-muted-foreground">Highest Match</span>
+                <span className="text-sm text-muted-foreground">Pick an environment</span>
               </div>
-              
+
               <div className="grid gap-4 sm:grid-cols-2">
                 {suggestedEnvironments.map((env) => (
                   <div
                     key={env.id}
-                    onClick={() => setSelectedEnv(env.id)}
+                    onClick={() => setSelectedEnv(env.id as EnvironmentType)}
                     className={`group relative flex cursor-pointer items-end overflow-hidden rounded-2xl border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-lg ${selectedEnv === env.id ? 'border-primary ring-2 ring-primary' : 'border-border/50'}`}
                   >
                     <div className="absolute inset-0 z-0">
@@ -276,7 +318,6 @@ export function MatchProfileView({ matchId }: { matchId?: string }) {
                 ))}
               </div>
             </div>
-
           </div>
         </div>
       </div>
