@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import type {
   ApiChatMessage,
+  ApiDiscoverResponse,
   ApiInvitation,
   ApiInvitationsResponse,
   ApiMatchOutcome,
@@ -95,6 +96,13 @@ export const users = {
   updateMe: (data: Partial<Pick<ApiUser, "name" | "bio" | "avatar">>) =>
     apiRequest<ApiUser>("/users/me", { method: "PUT", body: JSON.stringify(data) }),
   getProfile: (id: string) => apiRequest<ApiUser>(`/users/${id}`),
+  getDiscover: async () => {
+    const data = await apiRequest<ApiDiscoverResponse | ApiUser[]>("/users/discover");
+    if (Array.isArray(data)) {
+      return { users: data };
+    }
+    return { users: data?.users ?? [] };
+  },
 };
 
 export const rooms = {

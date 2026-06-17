@@ -8,7 +8,12 @@ export interface ApiUser {
   email: string
   avatar?: string | null
   bio?: string
+  interests?: string[]
   created_at?: string
+}
+
+export interface ApiDiscoverResponse {
+  users: ApiUser[]
 }
 
 export interface ApiInvitation {
