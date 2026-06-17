@@ -1,5 +1,5 @@
-import { MatchesView } from './matches-view';
+import { redirect } from 'next/navigation'
 
-export default function MatchesPage() {
-  return <MatchesView />;
+export default function DashboardPage() {
+  redirect('/dashboard/discover')
 }

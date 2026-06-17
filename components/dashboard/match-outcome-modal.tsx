@@ -47,10 +47,10 @@ export function MatchOutcomeModal({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
-            <Button onClick={() => router.push(`/dashboard`)}>
+            <Button onClick={() => router.push(`/dashboard/messages`)}>
               <MessageCircle className="mr-2 h-4 w-4" /> Send a Message
             </Button>
-            <Button variant="outline" onClick={() => router.push(`/profile`)}>
+            <Button variant="outline" onClick={() => router.push(`/dashboard/settings`)}>
               <User className="mr-2 h-4 w-4" /> View Profile
             </Button>
           </DialogFooter>

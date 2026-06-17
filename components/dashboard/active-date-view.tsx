@@ -25,8 +25,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { useWebSocket } from '@/hooks/use-websocket'
 import { chat, rooms, music as musicApi, feedback } from '@/lib/api'
-import { FeedbackModal } from '@/components/feedback/feedback-modal'
-import { MatchOutcomeModal } from '@/components/outcomes/match-outcome-modal'
+import { FeedbackModal } from '@/components/dashboard/feedback-modal'
+import { MatchOutcomeModal } from '@/components/dashboard/match-outcome-modal'
 import { toast } from 'sonner'
 
 export function ActiveDateView({ roomId }: { roomId: string }) {

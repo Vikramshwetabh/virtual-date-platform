@@ -30,14 +30,14 @@ import {
 } from "@/components/ui/sidebar"
 
 const mainNav = [
-  { title: "Discover", href: "/dashboard", icon: Home },
-  { title: "Matches", href: "/dashboard", icon: Heart, badge: "3" },
-  { title: "Messages", href: "/dashboard", icon: MessageCircleHeart },
-  { title: "Upcoming Dates", href: "/dashboard", icon: Calendar },
+  { title: "Discover", href: "/dashboard/discover", icon: Home },
+  { title: "Matches", href: "/dashboard/matches", icon: Heart, badge: "3" },
+  { title: "Messages", href: "/dashboard/messages", icon: MessageCircleHeart },
+  { title: "Upcoming Dates", href: "/dashboard/upcoming-dates", icon: Calendar },
 ]
 
 const secondaryNav = [
-  { title: "Settings", href: "/profile", icon: Settings },
+  { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
 export function AppSidebar() {
@@ -46,7 +46,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <Link href="/dashboard">
+        <Link href="/dashboard/discover">
           <Logo />
         </Link>
       </SidebarHeader>
@@ -56,7 +56,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNav.map((item) => (
-                <SidebarMenuItem key={item.href}>
+                <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton render={<Link href={item.href} /> as any} nativeButton={false} isActive={pathname === item.href}>
                     <item.icon />
                     <span>{item.title}</span>
@@ -102,7 +102,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="h-auto py-2" render={<Link href="/profile" /> as any} nativeButton={false}>
+            <SidebarMenuButton className="h-auto py-2" render={<Link href="/dashboard/settings" /> as any} nativeButton={false}>
               <Avatar className="size-8">
                 <AvatarImage src="/images/person-5.png" alt="Your profile" />
                 <AvatarFallback>AR</AvatarFallback>

@@ -27,7 +27,7 @@ export function InvitationCard({ invitation, onActionComplete }: InvitationCardP
       
       // Optional: Automatically redirect to the date room once accepted
       if (res.roomId) {
-        router.push(`/chat/${res.roomId}`);
+        router.push(`/dashboard/date/${res.roomId}`);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to accept invitation');

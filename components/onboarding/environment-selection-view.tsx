@@ -61,7 +61,7 @@ export function EnvironmentSelectionView() {
       })
       toast.success('Virtual date room created!')
       // Redirect dynamically to the newly created room ID
-      router.push(`/chat/${room.id}`)
+      router.push(`/dashboard/date/${room.id}`)
     } catch (error: any) {
       toast.error(error.message || 'Failed to create virtual date room');
     } finally {

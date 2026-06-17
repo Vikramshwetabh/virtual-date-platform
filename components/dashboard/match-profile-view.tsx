@@ -84,7 +84,7 @@ export function MatchProfileView({ matchId }: { matchId?: string }) {
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8 flex items-center justify-between">
-          <Link href="/dashboard" passHref>
+          <Link href="/dashboard/discover" passHref>
             <Button
               variant="ghost"
               size="icon"
