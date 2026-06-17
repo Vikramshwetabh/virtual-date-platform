@@ -1,5 +1,5 @@
-import { MatchProfileView } from '@/components/dashboard/match-profile-view'
+import { DiscoverView } from '@/components/dashboard/discover-view'
 
 export default function DiscoverPage() {
-  return <MatchProfileView />
+  return <DiscoverView />
 }

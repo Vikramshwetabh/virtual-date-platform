@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, X, Clock } from 'lucide-react';
+import { Check, X, Clock, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Invitation } from '@/components/onboarding/index';
 import { invitations as apiInvitations } from '@/lib/api';
+import type { EnrichedInvitation } from '@/lib/types/api';
 import { toast } from 'sonner';
 
 interface InvitationCardProps {
-  invitation: Invitation;
+  invitation: EnrichedInvitation;
   onActionComplete: () => void;
 }
 
@@ -24,9 +24,8 @@ export function InvitationCard({ invitation, onActionComplete }: InvitationCardP
       const res = await apiInvitations.accept(invitation.id);
       toast.success('Invitation accepted!');
       onActionComplete();
-      
-      // Optional: Automatically redirect to the date room once accepted
-      if (res.roomId) {
+
+      if (res?.roomId) {
         router.push(`/dashboard/date/${res.roomId}`);
       }
     } catch (error: any) {
@@ -53,27 +52,34 @@ export function InvitationCard({ invitation, onActionComplete }: InvitationCardP
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
   });
 
+  const senderName = invitation.sender?.name || 'Someone';
+  const senderAvatar = invitation.sender?.avatar;
+
   return (
     <Card className="overflow-hidden bg-card/60 backdrop-blur-sm border-border/50 transition-colors hover:border-primary/40">
       <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div className="flex items-center gap-4">
           <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 overflow-hidden relative">
-             {invitation.sender?.avatarUrl ? (
-               <img src={invitation.sender.avatarUrl} alt={invitation.sender.name} className="object-cover w-full h-full" />
+             {senderAvatar ? (
+               <img src={senderAvatar} alt={senderName} className="object-cover w-full h-full" />
              ) : (
                <span className="text-primary font-semibold font-heading text-lg">
-                 {invitation.sender?.name?.charAt(0) || '?'}
+                 {senderName.charAt(0) || '?'}
                </span>
              )}
           </div>
           <div>
             <h4 className="font-semibold text-card-foreground text-lg">
-              {invitation.sender?.name || 'Someone'}
+              {senderName}
             </h4>
-            <div className="flex items-center text-sm text-muted-foreground gap-3 mt-1">
+            <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-3 mt-1">
               <span className="flex items-center gap-1.5 opacity-80">
                 <Clock className="size-3.5" />
                 {dateCreated}
+              </span>
+              <span className="flex items-center gap-1.5 capitalize">
+                <MapPin className="size-3.5" />
+                {invitation.environmentType} date
               </span>
             </div>
           </div>

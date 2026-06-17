@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { useWebSocket } from '@/hooks/use-websocket'
 import { chat, rooms, music as musicApi, feedback } from '@/lib/api'
+import { normalizeHttpMessage, normalizeWebSocketMessage, type DisplayChatMessage } from '@/lib/chat-utils'
 import { FeedbackModal } from '@/components/dashboard/feedback-modal'
 import { MatchOutcomeModal } from '@/components/dashboard/match-outcome-modal'
 import { toast } from 'sonner'
@@ -42,9 +43,8 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   const [audioOffset, setAudioOffset] = useState<number>(0);
 
   const { connected, messages, send } = useWebSocket(roomId)
-  const [chatHistory, setChatHistory] = useState<any[]>([])
+  const [chatHistory, setChatHistory] = useState<DisplayChatMessage[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -63,7 +63,9 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
           musicApi.getRoomState(roomId)
         ]);
         setRoomDetails(details);
-        if (history?.messages) setChatHistory(history.messages);
+        if (history?.messages) {
+          setChatHistory(history.messages.map(normalizeHttpMessage))
+        }
         
         if (musicState?.isPlaying) {
           setIsPlaying(true);
@@ -149,12 +151,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   };
 
   const handleTyping = (val: string) => {
-    setMessage(val);
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    
-    typingTimeoutRef.current = setTimeout(() => {
-      send("chat:typing");
-    }, 1000);
+    setMessage(val)
   };
 
   // Prevent Ghost Users on unexpected navigation
@@ -184,14 +181,17 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   const otherUser = roomDetails?.members?.find((m: any) => m.userId !== localStorage.getItem('userId'));
 
   // Combine history with live messages, avoiding duplicates
-  const liveMessages = messages.filter(m => m.type === "chat:send" && !chatHistory.some(h => h.id === m.payload.id));
-  const displayMessages = [...chatHistory, ...liveMessages];
-  const isTyping = messages.some(m => m.type === "chat:typing" && m.userId !== "me"); // Example
+  const liveMessages = messages
+    .map(normalizeWebSocketMessage)
+    .filter((message): message is NonNullable<typeof message> => message !== null)
+    .filter((message) => !chatHistory.some((historyMessage) => historyMessage.id === message.id))
+
+  const displayMessages = [...chatHistory, ...liveMessages]
 
   // Auto Scroll logic
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [displayMessages, isTyping]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [displayMessages])
 
   return (
     <>
@@ -418,11 +418,11 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
 
           {/* Messages */}
           <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-5">
-            {displayMessages.map((msg, i) => {
+            {displayMessages.map((msg) => {
               const currentUserId = typeof window !== 'undefined' ? localStorage.getItem("userId") : null;
               const isMe = msg.userId === currentUserId;
               return (
-                <div key={i} className={`flex gap-3 ${isMe ? "flex-row-reverse" : ""}`}>
+                <div key={msg.id} className={`flex gap-3 ${isMe ? "flex-row-reverse" : ""}`}>
                   <Avatar className="size-8 border border-border/50 shadow-sm">
                     <AvatarImage src={isMe ? roomDetails?.members.find((m:any) => m.userId === currentUserId)?.avatar || "/images/avatar-a.png" : otherUser?.avatar || "/images/avatar-b.png"} />
                     <AvatarFallback>{isMe ? "Y" : otherUser?.name.charAt(0) || "M"}</AvatarFallback>
@@ -432,33 +432,12 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
                       <span className="text-sm font-medium">{isMe ? "You" : otherUser?.name || "Match"}</span>
                     </div>
                     <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${isMe ? "rounded-tr-none bg-primary text-primary-foreground shadow-sm" : "rounded-tl-none bg-secondary/60 text-secondary-foreground"}`}>
-                      {msg.payload?.content || msg.content}
+                      {msg.content}
                     </div>
                   </div>
                 </div>
               );
             })}
-
-            {/* Typing Indicator */}
-            {isTyping && (
-            <div className="mt-auto flex items-center gap-2 text-xs text-muted-foreground transition-opacity">
-              <div className="flex gap-1 rounded-full bg-secondary/40 px-3 py-2">
-                <span
-                  className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60"
-                  style={{ animationDelay: '0ms' }}
-                />
-                <span
-                  className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60"
-                  style={{ animationDelay: '150ms' }}
-                />
-                <span
-                  className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60"
-                  style={{ animationDelay: '300ms' }}
-                />
-              </div>
-              Maya is typing...
-            </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
 
