@@ -41,6 +41,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   const [isOutcomeModalOpen, setIsOutcomeModalOpen] = useState(false);
   const [outcomeData, setOutcomeData] = useState<any>(null)
   const [audioOffset, setAudioOffset] = useState<number>(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { connected, messages, send } = useWebSocket(roomId)
 
@@ -63,6 +64,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
           chat.getMessages(roomId),
           musicApi.getRoomState(roomId)
         ]);
+        console.log("ROOM_STATE_MUSIC", musicState);
         setRoomDetails(details);
         if (history?.messages) {
           setChatHistory(history.messages.map(normalizeHttpMessage))
@@ -98,6 +100,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
     const latestMsg = messages[messages.length - 1];
     const latestMsgType = latestMsg?.type || latestMsg?.event_type;
     if (latestMsgType === "music_started") {
+      console.log("MUSIC_STARTED_RECEIVED");
       setIsPlaying(true);
       if (latestMsg.payload?.startedAt) {
         setAudioOffset(Math.max(0, (Date.now() - new Date(latestMsg.payload.startedAt).getTime()) / 1000));
@@ -108,6 +111,26 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
       setIsPlaying(false);
     }
   }, [messages]);
+
+  // Synchronize actual audio element with React play/pause and offset state
+  useEffect(() => {
+    if (!audioRef.current) return;
+    
+    if (isPlaying) {
+      console.log("AUDIO_PLAY_CALLED");
+      // Set current time based on sync offset if drift is significant (> 1.5s)
+      const targetTime = audioOffset;
+      if (Math.abs(audioRef.current.currentTime - targetTime) > 1.5) {
+        audioRef.current.currentTime = targetTime;
+      }
+      
+      audioRef.current.play().catch(err => {
+        console.warn("Audio autoplay blocked by browser policy:", err);
+      });
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying, audioOffset]);
 
   const handleFeedbackSubmitted = async () => {
     setIsFeedbackModalOpen(false);
@@ -212,6 +235,12 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
         isOpen={isOutcomeModalOpen}
         onOpenChange={setIsOutcomeModalOpen}
         otherUser={otherUser}
+      />
+      <audio
+        ref={audioRef}
+        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        preload="auto"
+        loop
       />
 
     <div className="dark flex h-screen w-full flex-col overflow-hidden bg-background text-foreground md:flex-row">
@@ -399,6 +428,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
               size="icon"
               className="size-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
               onClick={async () => {
+                console.log("PLAY_BUTTON_CLICKED");
                 if (isPlaying) {
                   await musicApi.pause(roomId);
                 } else {
