@@ -103,6 +103,7 @@ export const users = {
     }
     return { users: data?.users ?? [] };
   },
+  getMatches: () => apiRequest<any>("/matches"),
 };
 
 export const rooms = {
@@ -112,11 +113,13 @@ export const rooms = {
   join: (id: string) => apiRequest<{ message: string }>(`/rooms/${id}/join`, { method: "POST" }),
   leave: (id: string) => apiRequest<{ message: string }>(`/rooms/${id}/leave`, { method: "POST" }),
   getMembers: (id: string) => apiRequest<{ members: ApiRoomMember[] }>(`/rooms/${id}/members`),
+  list: () => apiRequest<any>("/rooms"),
 };
 
 export const chat = {
   getMessages: (roomId: string, page = 1, limit = 50) =>
     apiRequest<{ messages: ApiChatMessage[] }>(`/rooms/${roomId}/messages?page=${page}&limit=${limit}`),
+  getConversations: () => apiRequest<any>("/conversations"),
 };
 
 export const music = {
@@ -141,6 +144,7 @@ export const invitations = {
   getPending: () => apiRequest<ApiInvitationsResponse>("/invitations"),
   accept: (id: string) => apiRequest<ApiInvitation>(`/invitations/${id}/accept`, { method: "POST" }),
   reject: (id: string) => apiRequest(`/invitations/${id}/reject`, { method: "POST" }),
+  getHistory: () => apiRequest<any>("/invitations/history"),
 };
 
 export const analytics = {
