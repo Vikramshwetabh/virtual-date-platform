@@ -84,6 +84,7 @@ export const users = {
   updateMe: (data: Record<string, any>) => 
     apiRequest<any>("/users/me", { method: "PUT", body: JSON.stringify(data) }),
   getProfile: (id: string) => apiRequest<any>(`/users/${id}`),
+  getMatches: () => apiRequest<any>("/matches"),
 };
 
 export const rooms = {
@@ -93,11 +94,13 @@ export const rooms = {
   join: (id: string) => apiRequest<{ message: string }>(`/rooms/${id}/join`, { method: "POST" }),
   leave: (id: string) => apiRequest<{ message: string }>(`/rooms/${id}/leave`, { method: "POST" }),
   getMembers: (id: string) => apiRequest<{ members: any[] }>(`/rooms/${id}/members`),
+  list: () => apiRequest<any>("/rooms"),
 };
 
 export const chat = {
   getMessages: (roomId: string, page = 1, limit = 50) =>
     apiRequest<{ messages: any[] }>(`/rooms/${roomId}/messages?page=${page}&limit=${limit}`),
+  getConversations: () => apiRequest<any>("/conversations"),
 };
 
 export const music = {
@@ -122,6 +125,7 @@ export const invitations = {
   getPending: () => apiRequest<{ invitations: any[] }>("/invitations"),
   accept: (id: string) => apiRequest<any>(`/invitations/${id}/accept`, { method: "POST" }),
   reject: (id: string) => apiRequest(`/invitations/${id}/reject`, { method: "POST" }),
+  getHistory: () => apiRequest<any>("/invitations/history"),
 };
 
 export const analytics = {
