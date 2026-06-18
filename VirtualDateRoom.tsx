@@ -34,7 +34,7 @@ export default function VirtualDateRoom({ roomId }: VirtualDateRoomProps) {
   // Merge incoming live messages with history
   const displayMessages = [
     ...chatHistory,
-    ...messages.filter((m) => m.type === "message")
+    ...messages.filter((m) => m.type === "message" || m.event_type === "message")
   ];
 
   const handleSendMessage = (e: React.FormEvent) => {

@@ -64,7 +64,7 @@ export function InvitationCard({ invitation, onActionComplete }: InvitationCardP
                <img src={senderAvatar} alt={senderName} className="object-cover w-full h-full" />
              ) : (
                <span className="text-primary font-semibold font-heading text-lg">
-                 {senderName.charAt(0) || '?'}
+                 {senderName?.charAt(0) || '?'}
                </span>
              )}
           </div>
