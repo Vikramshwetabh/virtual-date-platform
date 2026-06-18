@@ -4,9 +4,11 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuthStore } from "@/store/auth-store";
 
 export interface WebSocketMessage {
-  type: string;
+  type?: string;
+  event_type?: string;
   roomId?: string;
   userId?: string;
+  senderId?: string;
   payload?: any;
   timestamp?: string;
 }
@@ -55,8 +57,10 @@ export function useWebSocket(roomId?: string) {
     };
 
     ws.onmessage = (event) => {
+      console.log("1. Raw websocket frame:", event.data);
       try {
         const msg: WebSocketMessage = JSON.parse(event.data);
+        console.log("2. Parsed websocket message:", msg);
         setMessages((prev) => [...prev, msg]);
       } catch (err) {
         console.error("Failed to parse WebSocket message:", event.data);
@@ -77,7 +81,7 @@ export function useWebSocket(roomId?: string) {
 
   const send = useCallback((type: string, payload: any = {}) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type, roomId, payload }));
+      wsRef.current.send(JSON.stringify({ type, event_type: type, roomId, payload }));
     }
   }, [roomId]);
 

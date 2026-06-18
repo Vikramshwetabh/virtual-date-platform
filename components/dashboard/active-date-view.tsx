@@ -86,7 +86,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
 
   // Listen for Match Outcome
   useEffect(() => {
-    const outcomeMessage = messages.find(m => m.type === "match_outcome_ready" && m.roomId === roomId);
+    const outcomeMessage = messages.find(m => (m.type === "match_outcome_ready" || m.event_type === "match_outcome_ready") && m.roomId === roomId);
     if (outcomeMessage && !isOutcomeModalOpen) {
       setOutcomeData(outcomeMessage.payload);
       setIsOutcomeModalOpen(true);
@@ -96,14 +96,15 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   // Listen for Music Events
   useEffect(() => {
     const latestMsg = messages[messages.length - 1];
-    if (latestMsg?.type === "music_started") {
+    const latestMsgType = latestMsg?.type || latestMsg?.event_type;
+    if (latestMsgType === "music_started") {
       setIsPlaying(true);
       if (latestMsg.payload?.startedAt) {
         setAudioOffset(Math.max(0, (Date.now() - new Date(latestMsg.payload.startedAt).getTime()) / 1000));
       } else {
         setAudioOffset(0);
       }
-    } else if (latestMsg?.type === "music_paused") {
+    } else if (latestMsgType === "music_paused") {
       setIsPlaying(false);
     }
   }, [messages]);
@@ -186,7 +187,12 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
     .filter((message): message is NonNullable<typeof message> => message !== null)
     .filter((message) => !chatHistory.some((historyMessage) => historyMessage.id === message.id))
 
+  console.log("5. liveMessages:", liveMessages);
+
   const displayMessages = [...chatHistory, ...liveMessages]
+
+  console.log("6. displayMessages:", displayMessages);
+  console.log("7. Final rendered message list:", displayMessages);
 
   // Auto Scroll logic
   useEffect(() => {
@@ -425,7 +431,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
                 <div key={msg.id} className={`flex gap-3 ${isMe ? "flex-row-reverse" : ""}`}>
                   <Avatar className="size-8 border border-border/50 shadow-sm">
                     <AvatarImage src={isMe ? roomDetails?.members.find((m:any) => m.userId === currentUserId)?.avatar || "/images/avatar-a.png" : otherUser?.avatar || "/images/avatar-b.png"} />
-                    <AvatarFallback>{isMe ? "Y" : otherUser?.name.charAt(0) || "M"}</AvatarFallback>
+                    <AvatarFallback>{isMe ? "Y" : otherUser?.name?.charAt(0) || "M"}</AvatarFallback>
                   </Avatar>
                   <div className={`flex max-w-[80%] flex-col ${isMe ? "items-end" : ""} gap-1.5`}>
                     <div className={`flex items-baseline gap-2 ${isMe ? "flex-row-reverse" : ""}`}>

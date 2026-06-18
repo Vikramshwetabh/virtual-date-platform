@@ -16,13 +16,20 @@ export function normalizeHttpMessage(message: ApiChatMessage): DisplayChatMessag
 }
 
 export function normalizeWebSocketMessage(message: WebSocketMessage): DisplayChatMessage | null {
-  if (message.type !== 'message' || !message.userId) {
+  console.log("3. normalizeWebSocketMessage input:", message);
+  const type = message.type || message.event_type;
+  const userId = message.userId || message.senderId || message.payload?.userId || message.payload?.senderId;
+
+  if (type !== 'message' || !userId) {
+    console.log("4. normalizeWebSocketMessage output: null (filtered out)");
     return null
   }
 
-  return {
-    id: message.payload?.id || `${message.timestamp || Date.now()}-${message.userId}`,
-    userId: message.userId,
+  const result = {
+    id: message.payload?.id || `${message.timestamp || Date.now()}-${userId}`,
+    userId: userId,
     content: message.payload?.content || '',
-  }
+  };
+  console.log("4. normalizeWebSocketMessage output:", result);
+  return result;
 }

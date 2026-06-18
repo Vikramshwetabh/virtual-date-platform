@@ -35,7 +35,8 @@ export class SocketClient {
     this.socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        this.emit(message.type, message.payload);
+        const eventType = message.type || message.event_type;
+        this.emit(eventType, message.payload);
       } catch (err) {
         console.error('Failed to parse WebSocket message', err);
       }
@@ -86,7 +87,7 @@ export class SocketClient {
 
   send(type: string, payload: any) {
     if (this.socket?.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({ type, payload }));
+      this.socket.send(JSON.stringify({ type, event_type: type, payload }));
     } else {
       console.warn('Cannot send message, WebSocket is not open');
     }
