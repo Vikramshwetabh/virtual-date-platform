@@ -42,6 +42,9 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   const [outcomeData, setOutcomeData] = useState<any>(null)
   const [audioOffset, setAudioOffset] = useState<number>(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [songs, setSongs] = useState<any[]>([]);
+  const [selectedSong, setSelectedSong] = useState<any>(null);
+  const [currentSongId, setCurrentSongId] = useState<string | null>(null);
 
   const { connected, messages, send } = useWebSocket(roomId)
 
@@ -59,19 +62,27 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
           // Safe to ignore if already joined (409)
         }
         
-        const [details, history, musicState] = await Promise.all([
+        const [details, history, musicState, songData] = await Promise.all([
           rooms.get(roomId),
           chat.getMessages(roomId),
-          musicApi.getRoomState(roomId)
+          musicApi.getRoomState(roomId),
+          musicApi.getSongs().catch(() => ({ songs: [] }))
         ]);
         console.log("ROOM_STATE_MUSIC", musicState);
         setRoomDetails(details);
         if (history?.messages) {
           setChatHistory(history.messages.map(normalizeHttpMessage))
         }
+
+        const songList = songData?.songs || [];
+        setSongs(songList);
+        if (songList.length > 0) {
+          setSelectedSong(songList[0]);
+        }
         
         if (musicState?.isPlaying) {
           setIsPlaying(true);
+          setCurrentSongId(musicState.songId || null);
           if (musicState.startedAt) {
             setAudioOffset(Math.max(0, (Date.now() - new Date(musicState.startedAt).getTime()) / 1000));
           }
@@ -101,7 +112,9 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
     const latestMsgType = latestMsg?.type || latestMsg?.event_type;
     if (latestMsgType === "music_started") {
       console.log("MUSIC_STARTED_RECEIVED");
+      console.log("MUSIC_STARTED_EVENT", latestMsg);
       setIsPlaying(true);
+      setCurrentSongId(latestMsg.payload?.songId || latestMsg.payload?.song_id || null);
       if (latestMsg.payload?.startedAt) {
         setAudioOffset(Math.max(0, (Date.now() - new Date(latestMsg.payload.startedAt).getTime()) / 1000));
       } else {
@@ -217,6 +230,8 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
   console.log("6. displayMessages:", displayMessages);
   console.log("7. Final rendered message list:", displayMessages);
 
+  const currentSong = songs.find(s => s.id === currentSongId) || (songs.length > 0 ? songs[0] : null);
+
   // Auto Scroll logic
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -238,7 +253,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
       />
       <audio
         ref={audioRef}
-        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        src={currentSong?.url || "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"}
         preload="auto"
         loop
       />
@@ -417,10 +432,10 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
             </div>
             <div className="flex-1 overflow-hidden">
               <h5 className="truncate text-sm font-semibold text-foreground">
-                Lo-Fi Cafe Vibes
+                {currentSong?.title || "Lo-Fi Cafe Vibes"}
               </h5>
               <p className="truncate text-xs text-muted-foreground">
-                Chillhop Music {audioOffset > 0 && `(Sync: +${Math.floor(audioOffset)}s)`}
+                {currentSong?.artist || "Chillhop Music"} {audioOffset > 0 && `(Sync: +${Math.floor(audioOffset)}s)`}
               </p>
             </div>
             <Button
@@ -432,8 +447,14 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
                 if (isPlaying) {
                   await musicApi.pause(roomId);
                 } else {
-                  // In a real app, you'd get a songId from a selection or GET /songs
-                  await musicApi.play(roomId, "550e8400-e29b-41d4-a716-446655440003");
+                  const songId = selectedSong?.id || (songs.length > 0 ? songs[0].id : "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
+                  console.log("MUSIC_PLAY_REQUEST", { roomId, songId });
+                  try {
+                    const response = await musicApi.play(roomId, songId);
+                    console.log("MUSIC_PLAY_RESPONSE", response);
+                  } catch (err) {
+                    console.error("Failed to trigger play:", err);
+                  }
                 }
                 setIsPlaying(!isPlaying);
               }}
