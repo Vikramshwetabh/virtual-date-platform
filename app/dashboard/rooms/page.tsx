@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { rooms } from '@/lib/api';
-import { Sparkles, Calendar, ArrowRight, Play } from 'lucide-react';
+import { Video, Calendar, ArrowRight, Play } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,25 +29,25 @@ export default function RoomsPage() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
       <div className="flex flex-col space-y-2">
-        <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-          <Sparkles className="size-8 text-primary" />
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight flex items-center gap-3 text-white">
+          <Video className="size-8 text-primary" />
           Active Rooms
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-base md:text-lg">
           Your current active dating rooms. Enter to join your date.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 w-full bg-card/40 animate-pulse rounded-xl border border-border/50" />
+        <div className="grid gap-6 sm:grid-cols-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-44 w-full bg-card/20 animate-pulse rounded-[2rem] border border-white/5" />
           ))}
         </div>
       ) : roomList.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2">
           {roomList.map((room) => {
             const dateStr = room.createdAt 
               ? new Date(room.createdAt).toLocaleDateString(undefined, {
@@ -55,25 +55,27 @@ export default function RoomsPage() {
                 })
               : 'Unknown';
 
+            const isActive = room.status === 'active';
+
             return (
-              <Card key={room.id} className="bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/40 transition-colors">
-                <CardContent className="p-5 flex flex-col justify-between h-full gap-4">
-                  <div className="flex items-start justify-between">
+              <Card key={room.id} className="group overflow-hidden rounded-[2rem] border border-white/5 bg-gradient-to-br from-[#1b1522]/50 via-card/30 to-[#120f1a]/80 shadow-lg hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-0.5">
+                <CardContent className="p-6 flex flex-col justify-between h-full gap-5">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
-                      <h3 className="font-semibold text-lg capitalize">{room.roomType || 'Virtual'} Room</h3>
-                      <p className="text-xs text-muted-foreground">Created: {dateStr}</p>
+                      <h3 className="font-bold text-white text-lg capitalize">{room.roomType || 'Virtual'} Date Room</h3>
+                      <p className="text-xs text-muted-foreground/80 mt-0.5">Created: {dateStr}</p>
                     </div>
-                    <Badge variant={room.status === 'active' ? 'default' : 'secondary'} className="capitalize">
+                    <Badge variant={isActive ? 'default' : 'secondary'} className={isActive ? 'bg-green-500/10 text-green-400 border border-green-500/20 capitalize shadow-[0_0_8px_rgba(34,197,94,0.15)] font-semibold' : 'capitalize'}>
                       {room.status || 'Active'}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between gap-4 mt-auto">
-                    <span className="text-sm text-muted-foreground">
+                  <div className="flex items-center justify-between gap-4 mt-auto border-t border-white/5 pt-4">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       {room.members?.length || 0} participants
                     </span>
                     <Link href={`/dashboard/date/${room.id}`} passHref>
-                      <Button size="sm" className="gap-1.5 shadow-md shadow-primary/20">
-                        <Play className="size-4 fill-white" /> Join Date
+                      <Button size="sm" className="h-10 px-5 bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold shadow-md shadow-primary/20 rounded-xl transition-all duration-200 hover:scale-[1.02]">
+                        <Play className="size-4 fill-white mr-1.5" /> Join Date
                       </Button>
                     </Link>
                   </div>
@@ -83,12 +85,12 @@ export default function RoomsPage() {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-border/50 rounded-2xl bg-card/10">
+        <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-white/10 rounded-3xl bg-card/5">
           <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Sparkles className="size-8 text-primary/60" />
+            <Video className="size-8 text-primary/60" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">No active rooms</h3>
-          <p className="text-muted-foreground max-w-sm">When an invitation is accepted, an active virtual date room will be created here.</p>
+          <h3 className="text-xl font-bold text-white mb-2">No active rooms</h3>
+          <p className="text-muted-foreground/80 max-w-sm text-sm">When an invitation is accepted, an active virtual date room will be created here.</p>
         </div>
       )}
     </div>

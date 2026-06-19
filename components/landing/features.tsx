@@ -30,33 +30,36 @@ const features = [
 
 export function Features() {
   return (
-    <section id="how-it-works" className="px-4 py-20 md:py-28">
+    <section id="how-it-works" className="relative px-4 py-20 md:py-28">
+      {/* background decoration */}
+      <div className="absolute top-1/2 left-1/4 -z-10 size-[30rem] -translate-y-1/2 rounded-full bg-accent/5 blur-[120px]" />
+
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance md:text-4xl">
+          <h2 className="font-heading text-3xl font-extrabold tracking-tight text-balance md:text-5xl">
             A new way to fall for someone
           </h2>
-          <p className="mt-4 text-pretty text-muted-foreground">
+          <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
             Virtual dates give you the spark of meeting someone new with none of
             the pressure. Here&apos;s what makes it special.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => (
             <Card
               key={feature.title}
-              className="group h-full border-border bg-card/60 transition-colors hover:border-primary/40"
+              className="group h-full border border-border bg-card shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md"
             >
-              <CardContent className="flex flex-col gap-4 p-6">
-                <span className="flex size-11 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform group-hover:scale-110">
-                  <feature.icon className="size-5" />
+              <CardContent className="flex flex-col gap-5 p-7">
+                <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary transition-all duration-200">
+                  <feature.icon className="size-5.5" />
                 </span>
-                <div className="flex flex-col gap-2">
-                  <h3 className="font-heading text-lg font-semibold">
+                <div className="flex flex-col gap-2.5">
+                  <h3 className="font-heading text-xl font-bold tracking-tight">
                     {feature.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-sm leading-relaxed text-muted-foreground/90">
                     {feature.description}
                   </p>
                 </div>

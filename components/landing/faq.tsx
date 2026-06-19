@@ -33,22 +33,22 @@ export function Faq() {
     <section id="faq" className="px-4 py-20 md:py-28">
       <div className="mx-auto max-w-3xl">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance md:text-4xl">
+          <h2 className="font-heading text-3xl font-extrabold tracking-tight text-balance md:text-5xl">
             Questions, answered
           </h2>
-          <p className="mt-4 text-pretty text-muted-foreground">
+          <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
             Everything you need to know about dating the Virtual Date way.
           </p>
         </div>
 
-        <Accordion className="mt-10">
+        <Accordion className="mt-12 space-y-3">
           {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`item-${i}`}>
-              <AccordionTrigger className="py-5 text-base">
+            <AccordionItem key={i} value={`item-${i}`} className="border-b border-white/5 px-2">
+              <AccordionTrigger className="py-5 text-base font-semibold text-foreground/90 transition-colors hover:text-primary hover:no-underline">
                 {faq.q}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                <p className="leading-relaxed">{faq.a}</p>
+              <AccordionContent className="text-muted-foreground/90 pb-5">
+                <p className="leading-relaxed text-sm md:text-base">{faq.a}</p>
               </AccordionContent>
             </AccordionItem>
           ))}

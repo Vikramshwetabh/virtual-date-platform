@@ -111,30 +111,32 @@ export default function InvitationsPage() {
       : 'Recent';
 
     const statusColors: any = {
-      pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-      accepted: 'bg-green-500/10 text-green-500 border-green-500/20',
-      rejected: 'bg-red-500/10 text-red-500 border-red-500/20',
+      pending: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shadow-[0_0_8px_rgba(234,179,8,0.1)]',
+      accepted: 'bg-green-500/10 text-green-400 border-green-500/20 shadow-[0_0_8px_rgba(34,197,94,0.15)]',
+      rejected: 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_8px_rgba(239,68,68,0.1)]',
     };
 
     const isPending = inv.status === 'pending';
 
     return (
-      <Card key={inv.id} className="bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/40 transition-colors">
+      <Card key={inv.id} className="group overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-[#1b1522]/50 via-card/30 to-[#120f1a]/80 shadow-lg hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-0.5 animate-fade-in-up">
         <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
-            <Avatar className="size-12 border border-border/50 shrink-0">
-              <AvatarImage src={inv.sender?.avatar || undefined} alt={inv.sender?.name} />
-              <AvatarFallback>{inv.sender?.name?.charAt(0) || 'I'}</AvatarFallback>
-            </Avatar>
+            <div className="relative size-12 rounded-2xl overflow-hidden border border-white/10 group-hover:border-primary/40 transition-colors shrink-0 shadow-md">
+              <Avatar className="size-full rounded-none">
+                <AvatarImage src={inv.sender?.avatar || undefined} alt={inv.sender?.name} className="object-cover" />
+                <AvatarFallback>{inv.sender?.name?.charAt(0) || 'I'}</AvatarFallback>
+              </Avatar>
+            </div>
             <div className="min-w-0 space-y-1">
-              <h4 className="font-semibold text-base truncate">
+              <h4 className="font-bold text-white text-base truncate group-hover:text-primary transition-colors">
                 {inv.sender?.name || 'Someone'}
               </h4>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Clock className="size-3.5" /> {dateStr}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground/80">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Clock className="size-3.5 text-accent" /> {dateStr}
                 </span>
-                <span className="flex items-center gap-1 capitalize">
+                <span className="flex items-center gap-1.5 capitalize font-semibold text-primary">
                   <MapPin className="size-3.5" /> {inv.environmentType} Date
                 </span>
               </div>
@@ -147,7 +149,7 @@ export default function InvitationsPage() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="border-destructive/30 hover:bg-destructive/10 hover:text-destructive h-9 px-3" 
+                  className="border-white/10 hover:bg-white/5 hover:text-white rounded-xl h-9 px-3.5 font-semibold transition-all duration-200" 
                   onClick={() => handleReject(inv.id)} 
                   disabled={actioningId !== null}
                 >
@@ -155,7 +157,7 @@ export default function InvitationsPage() {
                 </Button>
                 <Button 
                   size="sm" 
-                  className="h-9 px-4 shadow-md shadow-primary/20" 
+                  className="h-9 px-4 bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold shadow-md shadow-primary/20 rounded-xl transition-all duration-200" 
                   onClick={() => handleAccept(inv.id)} 
                   disabled={actioningId !== null}
                 >
@@ -163,7 +165,7 @@ export default function InvitationsPage() {
                 </Button>
               </>
             ) : (
-              <Badge className={`capitalize shrink-0 border ${statusColors[inv.status] || ''}`} variant="outline">
+              <Badge className={`capitalize shrink-0 border px-3 py-1 font-semibold ${statusColors[inv.status] || ''}`} variant="outline">
                 {inv.status}
               </Badge>
             )}
@@ -174,13 +176,13 @@ export default function InvitationsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
       <div className="flex flex-col space-y-2">
-        <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-          <Calendar className="size-8 text-primary" />
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight flex items-center gap-3 text-white">
+          <Calendar className="size-8 text-primary animate-pulse" />
           Invitation History
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-base md:text-lg">
           Track the status of all sent and received virtual date requests.
         </p>
       </div>
@@ -188,25 +190,25 @@ export default function InvitationsPage() {
       {isLoading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 w-full bg-card/40 animate-pulse rounded-xl border border-border/50" />
+            <div key={i} className="h-24 w-full bg-card/20 animate-pulse rounded-2xl border border-white/5" />
           ))}
         </div>
       ) : (
         <Tabs defaultValue="pending" className="w-full space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-secondary/40 backdrop-blur-sm max-w-md">
-            <TabsTrigger value="pending">Pending ({pendingList.length})</TabsTrigger>
-            <TabsTrigger value="accepted">Accepted ({acceptedList.length})</TabsTrigger>
-            <TabsTrigger value="rejected">Declined ({rejectedList.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-secondary/20 p-1.5 rounded-2xl border border-white/5 max-w-md [&>button[data-state=active]]:bg-gradient-to-r [&>button[data-state=active]]:from-primary [&>button[data-state=active]]:to-accent [&>button[data-state=active]]:text-primary-foreground">
+            <TabsTrigger value="pending" className="rounded-xl font-semibold text-sm transition-all duration-300">Pending ({pendingList.length})</TabsTrigger>
+            <TabsTrigger value="accepted" className="rounded-xl font-semibold text-sm transition-all duration-300">Accepted ({acceptedList.length})</TabsTrigger>
+            <TabsTrigger value="rejected" className="rounded-xl font-semibold text-sm transition-all duration-300">Declined ({rejectedList.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4 outline-none">
             {pendingList.length > 0 ? (
               pendingList.map(renderInvitationCard)
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border/50 rounded-2xl bg-card/5">
-                <Clock className="size-8 text-muted-foreground mb-3" />
-                <h4 className="font-semibold text-lg">No pending requests</h4>
-                <p className="text-sm text-muted-foreground">Any pending date invitations will appear here.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-white/10 rounded-3xl bg-card/5">
+                <Clock className="size-8 text-muted-foreground/60 mb-3 animate-float" />
+                <h4 className="font-bold text-white text-lg">No pending requests</h4>
+                <p className="text-sm text-muted-foreground/80 max-w-xs mt-1">Any pending date invitations will appear here.</p>
               </div>
             )}
           </TabsContent>
@@ -215,10 +217,10 @@ export default function InvitationsPage() {
             {acceptedList.length > 0 ? (
               acceptedList.map(renderInvitationCard)
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border/50 rounded-2xl bg-card/5">
-                <Check className="size-8 text-muted-foreground mb-3" />
-                <h4 className="font-semibold text-lg">No accepted invitations</h4>
-                <p className="text-sm text-muted-foreground">Accepted virtual date requests will list here.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-white/10 rounded-3xl bg-card/5">
+                <Check className="size-8 text-muted-foreground/60 mb-3 animate-float" />
+                <h4 className="font-bold text-white text-lg">No accepted invitations</h4>
+                <p className="text-sm text-muted-foreground/80 max-w-xs mt-1">Accepted virtual date requests will list here.</p>
               </div>
             )}
           </TabsContent>
@@ -227,10 +229,10 @@ export default function InvitationsPage() {
             {rejectedList.length > 0 ? (
               rejectedList.map(renderInvitationCard)
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border/50 rounded-2xl bg-card/5">
-                <X className="size-8 text-muted-foreground mb-3" />
-                <h4 className="font-semibold text-lg">No declined invitations</h4>
-                <p className="text-sm text-muted-foreground">Declined requests will be shown here.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-white/10 rounded-3xl bg-card/5">
+                <X className="size-8 text-muted-foreground/60 mb-3 animate-float" />
+                <h4 className="font-bold text-white text-lg">No declined invitations</h4>
+                <p className="text-sm text-muted-foreground/80 max-w-xs mt-1">Declined requests will be shown here.</p>
               </div>
             )}
           </TabsContent>

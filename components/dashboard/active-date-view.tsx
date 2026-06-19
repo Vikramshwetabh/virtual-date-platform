@@ -258,7 +258,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
         loop
       />
 
-    <div className="dark flex h-screen w-full flex-col overflow-hidden bg-background text-foreground md:flex-row">
+    <div className="dark flex h-screen w-full flex-col overflow-hidden bg-[#120f1a] text-foreground md:flex-row animate-fade-in-up">
       {/* Main Area */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
         {/* Environment Background */}
@@ -267,10 +267,10 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
             src="/images/env-coffee.png"
             alt="Coffee Shop Environment"
             fill
-            className="object-cover opacity-50 blur-[4px]"
+            className="object-cover opacity-45 blur-[6px] scale-105 transition-transform duration-1000"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/20 to-background/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#120f1a]/95 via-black/20 to-[#120f1a]/95" />
         </div>
 
         {/* Top Bar */}
@@ -278,25 +278,25 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
           <div className="flex items-center gap-3">
             <Badge
               variant="secondary"
-              className="border-border/50 bg-background/50 px-3 py-1.5 text-xs font-medium backdrop-blur-md"
+              className="border-primary/20 bg-[#120f1a]/60 px-3.5 py-2 text-xs font-bold backdrop-blur-md text-primary"
             >
-              <span className="mr-2 flex size-2 animate-pulse rounded-full bg-green-500" />
+              <span className="mr-2 flex size-2.5 animate-pulse rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
               Coffee Shop Date
             </Badge>
             <Badge
               variant="outline"
-              className="border-border/50 bg-background/50 px-3 py-1.5 font-mono text-xs backdrop-blur-md"
+              className="border-white/5 bg-[#120f1a]/60 px-3.5 py-2 font-mono text-xs text-muted-foreground backdrop-blur-md"
             >
-              <Clock className="mr-2 size-3.5" />
+              <Clock className="mr-2 size-3.5 text-accent" />
               00:12:45
             </Badge>
           </div>
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className={`border-border/50 bg-background/50 backdrop-blur-md ${connected ? 'text-green-500' : 'text-red-500'}`}
+              className={`border-white/5 bg-[#120f1a]/60 px-3.5 py-2 backdrop-blur-md text-xs font-semibold ${connected ? 'text-green-400' : 'text-red-400'}`}
             >
-              <Wifi className={`mr-1.5 size-3.5 ${connected ? 'text-green-500' : 'text-red-500'}`} />
+              <Wifi className={`mr-2 size-3.5 ${connected ? 'text-green-400 animate-pulse' : 'text-red-400'}`} />
               {connected ? "Connected" : "Reconnecting..."}
             </Badge>
           </div>
@@ -308,37 +308,39 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
             
             {/* User Avatar */}
             <div className="group flex flex-col items-center gap-4">
-              <div className="relative flex size-32 items-center justify-center rounded-full border-4 border-primary/20 bg-background/50 p-1 shadow-2xl backdrop-blur-sm transition-transform duration-300 hover:scale-105 md:size-48">
-                <Image
-                  src="/images/avatar-a.png"
-                  alt="You"
-                  fill
-                  className="rounded-full object-cover"
-                />
-                <div className="absolute bottom-1 right-1 rounded-full border border-border bg-background p-1.5 shadow-lg">
+              <div className="relative flex size-32 items-center justify-center rounded-full border-4 border-white/5 bg-secondary/35 p-1 shadow-2xl backdrop-blur-md transition-transform duration-300 hover:scale-105 md:size-44">
+                <div className="relative size-full overflow-hidden rounded-full border-2 border-white/10">
+                  <Image
+                    src="/images/avatar-a.png"
+                    alt="You"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="absolute bottom-1 right-1 rounded-full border border-white/10 bg-[#120f1a] p-2 shadow-lg">
                   {isMuted ? (
-                    <MicOff className="size-4 text-destructive" />
+                    <MicOff className="size-4.5 text-destructive" />
                   ) : (
-                    <Mic className="size-4 text-green-500" />
+                    <Mic className="size-4.5 text-green-400" />
                   )}
                 </div>
               </div>
               <div className="text-center">
-                <h3 className="font-heading text-lg font-semibold tracking-tight text-white">
+                <h3 className="font-heading text-lg font-bold tracking-tight text-white">
                   You
                 </h3>
-                <p className="text-xs text-white/60">Online</p>
+                <p className="text-[10px] uppercase font-bold tracking-wider text-green-400">Online</p>
               </div>
             </div>
 
             {/* Center Information */}
-            <div className="relative hidden flex-1 flex-col items-center justify-center md:flex">
-              <div className="absolute size-40 animate-pulse rounded-full bg-primary/20 blur-[60px]" />
-              <div className="z-10 text-center">
-                <h2 className="font-heading text-3xl font-bold tracking-tight text-white/90">
+            <div className="relative hidden flex-1 flex-col items-center justify-center md:flex animate-float">
+              <div className="absolute size-44 animate-pulse rounded-full bg-primary/10 blur-[80px] animate-pulse-slow" />
+              <div className="z-10 text-center bg-black/40 border border-white/5 p-6 rounded-3xl backdrop-blur-md">
+                <h2 className="font-heading text-2xl font-extrabold tracking-tight text-white">
                   Coffee Shop Date
                 </h2>
-                <p className="mt-2 text-sm text-white/60">
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed max-w-[200px]">
                   Relax, chat, and enjoy your first virtual date
                 </p>
               </div>
@@ -346,25 +348,27 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
 
             {/* Match Avatar */}
             <div className="flex flex-col items-center gap-4">
-              <div className="relative flex size-32 items-center justify-center rounded-full border-4 border-primary/50 bg-background/50 p-1 shadow-2xl shadow-primary/20 backdrop-blur-sm transition-transform duration-300 hover:scale-105 md:size-48">
-                <Image
-                  src={otherUser?.avatar || "/images/avatar-b.png"}
-                  alt="Maya"
-                  fill
-                  className="rounded-full object-cover"
-                />
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-primary/30 bg-primary/20 px-3 py-1 backdrop-blur-md">
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground">
-                    <div className="size-1.5 animate-pulse rounded-full bg-green-400" />
+              <div className="relative flex size-32 items-center justify-center rounded-full border-4 border-primary/20 bg-secondary/35 p-1 shadow-2xl shadow-primary/10 backdrop-blur-md transition-transform duration-300 hover:scale-105 md:size-44">
+                <div className="relative size-full overflow-hidden rounded-full border-2 border-white/10 animate-pulse-slow">
+                  <Image
+                    src={otherUser?.avatar || "/images/avatar-b.png"}
+                    alt="Maya"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full border border-primary/30 bg-primary/20 px-3 py-1.5 backdrop-blur-md shadow-md">
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                    <div className="size-1.5 animate-pulse rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.6)]" />
                     Speaking
                   </span>
                 </div>
               </div>
               <div className="text-center">
-                <h3 className="font-heading text-lg font-semibold tracking-tight text-white">
+                <h3 className="font-heading text-lg font-bold tracking-tight text-white">
                   {otherUser?.name || "Match"}
                 </h3>
-                <p className="text-xs text-white/60">Online</p>
+                <p className="text-[10px] uppercase font-bold tracking-wider text-green-400">Online</p>
               </div>
             </div>
           </div>
@@ -374,26 +378,26 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
         <div className="relative z-10 flex flex-col items-center justify-center gap-6 p-6 pb-8 md:flex-row md:justify-between">
           <div className="hidden w-40 md:block" /> {/* Spacer */}
 
-          <div className="flex items-center rounded-full border border-border/50 bg-background/50 p-2 shadow-xl backdrop-blur-xl">
+          <div className="flex items-center rounded-full border border-white/5 bg-[#120f1a]/80 p-2 shadow-2xl backdrop-blur-xl">
             <Button
               variant={isMuted ? 'destructive' : 'ghost'}
               size="icon"
-              className="rounded-full"
+              className="rounded-full size-11 hover:scale-105 transition-transform"
               onClick={() => setIsMuted(!isMuted)}
             >
               {isMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
             </Button>
-            <div className="mx-2 h-6 w-px bg-border/50" />
+            <div className="mx-2.5 h-6 w-px bg-white/5" />
             <Button
               variant={isVideoOff ? 'destructive' : 'ghost'}
               size="icon"
-              className="rounded-full"
+              className="rounded-full size-11 hover:scale-105 transition-transform"
               onClick={() => setIsVideoOff(!isVideoOff)}
             >
               {isVideoOff ? <VideoOff className="size-5" /> : <Video className="size-5" />}
             </Button>
-            <div className="mx-2 h-6 w-px bg-border/50" />
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <div className="mx-2.5 h-6 w-px bg-white/5" />
+            <Button variant="ghost" size="icon" className="rounded-full size-11 hover:scale-105 transition-transform">
               <Settings className="size-5 text-muted-foreground" />
             </Button>
           </div>
@@ -401,10 +405,10 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
           <div className="flex w-40 justify-end">
             <Button
               variant="destructive"
-              className="rounded-full px-6 font-semibold shadow-lg shadow-destructive/20 transition-transform hover:scale-105"
+              className="rounded-full px-6 py-5 font-bold shadow-lg shadow-destructive/20 transition-all duration-300 hover:scale-[1.03]"
               onClick={handleLeaveRoom}
             >
-              <PhoneOff className="mr-2 size-4" />
+              <PhoneOff className="mr-2 size-4 fill-current" />
               Leave Date
             </Button>
           </div>
@@ -412,14 +416,14 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
       </div>
 
       {/* Right Sidebar */}
-      <div className="z-20 flex w-full flex-col border-l border-border/50 bg-card/60 backdrop-blur-2xl md:w-[380px]">
+      <div className="z-20 flex w-full flex-col border-l border-white/5 bg-[#1b1522]/40 backdrop-blur-3xl md:w-[380px]">
         {/* Music Card */}
-        <div className="border-b border-border/50 p-5">
-          <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <Music className="size-3.5" /> Shared Audio
+        <div className="border-b border-white/5 p-5 bg-black/10">
+          <h4 className="mb-3.5 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <Music className="size-3.5 text-primary" /> Shared Audio
           </h4>
-          <div className="flex items-center gap-4 rounded-2xl border border-border/50 bg-background/50 p-3 shadow-sm">
-            <div className="relative size-14 overflow-hidden rounded-xl bg-muted">
+          <div className="flex items-center gap-4 rounded-2xl border border-white/5 bg-secondary/20 p-3 shadow-md">
+            <div className="relative size-12 overflow-hidden rounded-xl bg-muted border border-white/5 shrink-0">
               <Image
                 src="/placeholder.svg"
                 alt="Album Art"
@@ -431,17 +435,17 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
               </div>
             </div>
             <div className="flex-1 overflow-hidden">
-              <h5 className="truncate text-sm font-semibold text-foreground">
+              <h5 className="truncate text-sm font-bold text-white">
                 {currentSong?.title || "Lo-Fi Cafe Vibes"}
               </h5>
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate text-xs text-muted-foreground/80 mt-0.5">
                 {currentSong?.artist || "Chillhop Music"} {audioOffset > 0 && `(Sync: +${Math.floor(audioOffset)}s)`}
               </p>
             </div>
             <Button
               variant="secondary"
               size="icon"
-              className="size-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+              className="size-10 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 shrink-0 hover:scale-105 transition-transform"
               onClick={async () => {
                 console.log("PLAY_BUTTON_CLICKED");
                 if (isPlaying) {
@@ -459,36 +463,34 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
                 setIsPlaying(!isPlaying);
               }}
             >
-              {isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
+              {isPlaying ? <Pause className="size-4.5" /> : <Play className="size-4.5 fill-current" />}
             </Button>
           </div>
         </div>
 
         {/* Chat Area */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center justify-between border-b border-border/50 p-5">
-            <h4 className="font-heading text-sm font-semibold">Live Chat</h4>
-            <Button variant="ghost" size="icon" className="size-8 rounded-full">
+          <div className="flex items-center justify-between border-b border-white/5 p-5 bg-black/10">
+            <h4 className="font-heading text-sm font-bold text-white">Live Chat</h4>
+            <Button variant="ghost" size="icon" className="size-8 rounded-full hover:bg-white/5">
               <MoreHorizontal className="size-4 text-muted-foreground" />
             </Button>
           </div>
 
           {/* Messages */}
-          <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-5">
+          <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
             {displayMessages.map((msg) => {
               const currentUserId = typeof window !== 'undefined' ? localStorage.getItem("userId") : null;
               const isMe = msg.userId === currentUserId;
               return (
-                <div key={msg.id} className={`flex gap-3 ${isMe ? "flex-row-reverse" : ""}`}>
-                  <Avatar className="size-8 border border-border/50 shadow-sm">
-                    <AvatarImage src={isMe ? roomDetails?.members.find((m:any) => m.userId === currentUserId)?.avatar || "/images/avatar-a.png" : otherUser?.avatar || "/images/avatar-b.png"} />
+                <div key={msg.id} className={`flex gap-3 items-end ${isMe ? "flex-row-reverse" : ""}`}>
+                  <Avatar className="size-8 border border-white/10 shadow-sm shrink-0">
+                    <AvatarImage src={isMe ? roomDetails?.members.find((m:any) => m.userId === currentUserId)?.avatar || "/images/avatar-a.png" : otherUser?.avatar || "/images/avatar-b.png"} className="object-cover" />
                     <AvatarFallback>{isMe ? "Y" : otherUser?.name?.charAt(0) || "M"}</AvatarFallback>
                   </Avatar>
-                  <div className={`flex max-w-[80%] flex-col ${isMe ? "items-end" : ""} gap-1.5`}>
-                    <div className={`flex items-baseline gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
-                      <span className="text-sm font-medium">{isMe ? "You" : otherUser?.name || "Match"}</span>
-                    </div>
-                    <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${isMe ? "rounded-tr-none bg-primary text-primary-foreground shadow-sm" : "rounded-tl-none bg-secondary/60 text-secondary-foreground"}`}>
+                  <div className={`flex max-w-[75%] flex-col ${isMe ? "items-end" : ""} gap-1`}>
+                    <span className="text-[10px] font-semibold text-muted-foreground px-1">{isMe ? "You" : otherUser?.name || "Match"}</span>
+                    <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${isMe ? "rounded-br-none bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md font-medium" : "rounded-bl-none bg-secondary/35 text-secondary-foreground border border-white/5"}`}>
                       {msg.content}
                     </div>
                   </div>
@@ -499,7 +501,7 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
           </div>
 
           {/* Input */}
-          <div className="border-t border-border/50 bg-background/40 p-5 backdrop-blur-sm">
+          <div className="border-t border-white/5 bg-black/20 p-5 backdrop-blur-sm">
             <form
               className="relative flex items-center gap-2"
               onSubmit={(e) => {
@@ -514,13 +516,13 @@ export function ActiveDateView({ roomId }: { roomId: string }) {
                 value={message}
                 onChange={(e) => handleTyping(e.target.value)}
                 placeholder="Type a message..."
-                className="h-11 rounded-full border-border/50 bg-secondary/40 pr-12 focus-visible:ring-primary/50"
+                className="h-11 rounded-xl border-white/10 bg-secondary/20 pr-12 focus-visible:ring-primary/40 text-white placeholder:text-muted-foreground/60 focus-visible:bg-secondary/40 focus-visible:border-primary/50 transition-colors"
               />
               <Button
                 type="submit"
                 size="icon"
                 variant="ghost"
-                className="absolute right-1 size-9 rounded-full text-primary hover:bg-primary/10 hover:text-primary"
+                className="absolute right-1 size-9 rounded-lg text-primary hover:bg-primary/10 hover:text-primary transition-all"
                 disabled={!message.trim()}
               >
                 <Send className="size-4" />
