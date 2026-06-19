@@ -49,57 +49,78 @@ export function DiscoverView() {
   }, [loadDiscoverUsers])
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in-up">
       <div className="flex flex-col space-y-2">
-        <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight flex items-center gap-3 text-foreground">
           <Compass className="size-8 text-primary" />
           Discover
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-base md:text-lg">
           Browse people to connect with. Open a profile to invite them to a virtual date.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 w-full bg-card/40 animate-pulse rounded-xl border border-border/50" />
+            <div key={i} className="h-64 w-full bg-card/50 animate-pulse rounded-3xl border border-border" />
           ))}
         </div>
       ) : people.length > 0 ? (
-        <div className="grid gap-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {people.map((person) => {
             const interests = parseInterests(person)
 
             return (
               <Card
                 key={person.id}
-                className="bg-card/60 backdrop-blur-sm border-border/50 transition-colors hover:border-primary/40"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-border bg-card p-6 shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md"
               >
-                <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <Avatar className="size-14 shrink-0">
-                    <AvatarImage src={person.avatar || undefined} alt={person.name} />
-                    <AvatarFallback>{person.name?.charAt(0) || '?'}</AvatarFallback>
-                  </Avatar>
+                <CardContent className="p-0 flex flex-col h-full justify-between gap-5">
+                  <div className="flex items-start gap-4">
+                    <div className="relative size-14 shrink-0 rounded-2xl overflow-hidden border-2 border-primary/20 group-hover:border-primary/50 transition-colors">
+                      <Avatar className="size-full rounded-none">
+                        <AvatarImage src={person.avatar || undefined} alt={person.name} className="object-cover" />
+                        <AvatarFallback>{person.name?.charAt(0) || '?'}</AvatarFallback>
+                      </Avatar>
+                    </div>
 
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <h3 className="font-semibold text-lg">{person.name}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {person.bio || 'No bio yet.'}
-                    </p>
-                    {interests.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {interests.map((interest) => (
-                          <Badge key={interest} variant="secondary" className="text-xs">
-                            {interest}
-                          </Badge>
-                        ))}
+                    <div className="min-w-0 space-y-1">
+                      <h3 className="font-bold text-lg text-foreground truncate group-hover:text-primary transition-colors">{person.name}</h3>
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-block text-xs font-semibold text-accent uppercase tracking-wider">92% Spark</span>
+                        <span className="group/tooltip relative inline-flex size-3.5 items-center justify-center rounded-full bg-secondary text-[10px] text-muted-foreground cursor-help border border-border" title="Spark Score is calculated based on shared core values, matching interests, and dates preferences.">
+                          ?
+                          <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-48 -translate-x-1/2 rounded-lg bg-popover border border-border p-2.5 text-[11px] leading-normal text-popover-foreground opacity-0 shadow-md transition-opacity group-hover/tooltip:opacity-100">
+                            Represents compatibility based on onboarding preferences and favorite dating environments.
+                          </span>
+                        </span>
                       </div>
-                    ) : null}
+                    </div>
                   </div>
 
+                  <p className="text-sm text-muted-foreground/90 line-clamp-3 leading-relaxed flex-1">
+                    {person.bio || 'No bio yet.'}
+                  </p>
+
+                  {interests.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 py-1">
+                      {interests.slice(0, 3).map((interest) => (
+                        <Badge key={interest} variant="secondary" className="text-xs bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 hover:bg-primary/20">
+                          {interest}
+                        </Badge>
+                      ))}
+                      {interests.length > 3 && (
+                        <Badge variant="secondary" className="text-xs bg-secondary/30 text-muted-foreground border border-border px-2 py-0.5">
+                          +{interests.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  ) : null}
+
                   <Button
-                    className="shrink-0"
+                    variant="secondary"
+                    className="w-full h-10 rounded-xl border border-border hover:bg-primary hover:text-primary-foreground hover:border-transparent font-semibold shadow-sm transition-all duration-200"
                     render={<Link href={`/dashboard/discover/${person.id}`} />}
                   >
                     View Profile
@@ -110,10 +131,10 @@ export function DiscoverView() {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border/50 rounded-2xl bg-card/10">
-          <UserRound className="size-10 text-primary/60 mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No users available yet</h3>
-          <p className="text-muted-foreground max-w-md">
+        <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-border rounded-3xl bg-card shadow-sm">
+          <UserRound className="size-12 text-primary/40 mb-4" />
+          <h3 className="text-xl font-bold text-foreground mb-2">No users available yet</h3>
+          <p className="text-muted-foreground/80 max-w-sm text-sm">
             Check back soon for new people to connect with.
           </p>
         </div>

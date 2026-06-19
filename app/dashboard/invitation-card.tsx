@@ -56,40 +56,40 @@ export function InvitationCard({ invitation, onActionComplete }: InvitationCardP
   const senderAvatar = invitation.sender?.avatar;
 
   return (
-    <Card className="overflow-hidden bg-card/60 backdrop-blur-sm border-border/50 transition-colors hover:border-primary/40">
-      <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+    <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm hover:border-primary/30 transition-all duration-200 animate-fade-in-up">
+      <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div className="flex items-center gap-4">
-          <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 overflow-hidden relative">
+          <div className="size-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center border-2 border-primary/20 shrink-0 overflow-hidden relative shadow-md">
              {senderAvatar ? (
                <img src={senderAvatar} alt={senderName} className="object-cover w-full h-full" />
              ) : (
-               <span className="text-primary font-semibold font-heading text-lg">
+               <span className="text-primary font-bold font-heading text-xl">
                  {senderName?.charAt(0) || '?'}
                </span>
              )}
           </div>
-          <div>
-            <h4 className="font-semibold text-card-foreground text-lg">
+          <div className="space-y-1">
+            <h4 className="font-bold text-foreground text-lg group-hover:text-primary transition-colors">
               {senderName}
             </h4>
-            <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-3 mt-1">
-              <span className="flex items-center gap-1.5 opacity-80">
-                <Clock className="size-3.5" />
+            <div className="flex flex-wrap items-center text-xs text-muted-foreground/80 gap-x-4 gap-y-1">
+              <span className="flex items-center gap-1.5 font-medium">
+                <Clock className="size-3.5 text-accent" />
                 {dateCreated}
               </span>
-              <span className="flex items-center gap-1.5 capitalize">
+              <span className="flex items-center gap-1.5 capitalize font-semibold text-primary">
                 <MapPin className="size-3.5" />
-                {invitation.environmentType} date
+                {invitation.environmentType} Date
               </span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 mt-4 sm:mt-0">
-          <Button variant="outline" size="sm" className="border-destructive/30 hover:bg-destructive/10 hover:text-destructive h-10 px-4" onClick={handleReject} disabled={isLoading}>
+          <Button variant="outline" size="sm" className="border-border hover:bg-foreground/5 hover:text-foreground rounded-xl h-10 px-4 font-semibold transition-all duration-200" onClick={handleReject} disabled={isLoading}>
             <X className="size-4 mr-1.5" /> Decline
           </Button>
-          <Button size="sm" className="h-10 px-6 shadow-md shadow-primary/20" onClick={handleAccept} disabled={isLoading}>
+          <Button size="sm" className="h-10 px-5 bg-primary text-primary-foreground font-bold rounded-xl transition-all duration-200" onClick={handleAccept} disabled={isLoading}>
             <Check className="size-4 mr-1.5" /> Accept
           </Button>
         </div>

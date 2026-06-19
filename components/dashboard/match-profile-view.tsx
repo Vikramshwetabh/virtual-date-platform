@@ -118,14 +118,14 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
   const compatibility = profile.compatibility
 
   return (
-    <div className="min-h-screen bg-background px-4 py-6 md:p-8 lg:p-12">
+    <div className="min-h-screen bg-background px-4 py-6 md:p-8 lg:p-12 animate-fade-in-up">
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 flex items-center justify-between">
           <Link href="/dashboard/discover" passHref>
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full bg-secondary/50 backdrop-blur-sm hover:bg-secondary"
+              className="rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
             >
               <ArrowLeft className="size-5" />
               <span className="sr-only">Back</span>
@@ -135,17 +135,17 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
           <div className="flex items-center gap-3">
             <Badge
               variant="secondary"
-              className="border-primary/20 bg-primary/10 text-primary backdrop-blur-md"
+              className="border-primary/20 bg-primary/10 text-primary px-3 py-1 font-semibold backdrop-blur-md"
             >
-              <Heart className="mr-1.5 size-3.5 fill-primary" />
+              <Heart className="mr-1.5 size-3.5 fill-primary text-primary" />
               Match Profile
             </Badge>
             {typeof compatibility === 'number' ? (
               <Badge
                 variant="outline"
-                className="border-border/50 bg-background/50 font-mono backdrop-blur-md"
+                className="border-accent/20 bg-accent/10 text-accent font-semibold px-3 py-1 font-mono backdrop-blur-md"
               >
-                <Sparkles className="mr-1.5 size-3.5 text-yellow-500" />
+                <Sparkles className="mr-1.5 size-3.5 text-accent fill-current" />
                 {compatibility}% Compatible
               </Badge>
             ) : null}
@@ -153,30 +153,31 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
         </header>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+          {/* Left Column - Avatar & Core CTAs */}
           <div className="flex flex-col gap-6 lg:col-span-5 xl:col-span-4">
             <div className="sticky top-6 flex flex-col gap-6">
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] shadow-2xl">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2.5rem] border border-white/5 shadow-2xl group hover:border-primary/20 transition-all duration-500">
                 <Image
                   src={image}
                   alt={profile.name}
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
 
-                <div className="absolute bottom-0 inset-x-0 flex flex-col gap-2 p-8 text-white">
+                <div className="absolute bottom-0 inset-x-0 flex flex-col gap-2 p-8 text-white z-10">
                   <div className="flex items-center gap-2">
-                    <h1 className="font-heading text-4xl font-bold tracking-tight">
+                    <h1 className="font-heading text-4xl font-extrabold tracking-tight">
                       {profile.name}
                       {profile.age ? `, ${profile.age}` : ''}
                     </h1>
-                    <CheckCircle2 className="size-6 text-blue-400" />
+                    <CheckCircle2 className="size-6 text-blue-400 fill-current" />
                   </div>
                   {profile.location ? (
-                    <div className="flex items-center text-white/80">
-                      <MapPin className="mr-1.5 size-4" />
-                      <span className="text-sm font-medium">{profile.location}</span>
+                    <div className="flex items-center text-white/80 text-sm font-medium">
+                      <MapPin className="mr-1.5 size-4 text-primary" />
+                      <span>{profile.location}</span>
                     </div>
                   ) : null}
                 </div>
@@ -187,12 +188,12 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
                   size="lg"
                   onClick={handleInvite}
                   disabled={isInviting}
-                  className="w-full h-14 rounded-2xl bg-primary text-base font-semibold shadow-xl shadow-primary/25 transition-transform hover:scale-[1.02]"
+                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-base font-bold shadow-xl shadow-primary/25 transition-all duration-300 hover:scale-[1.02] hover:opacity-95"
                 >
                   {isInviting ? (
                     <span className="animate-spin mr-2">⏳</span>
                   ) : (
-                    <Video className="mr-2 size-5" />
+                    <Video className="mr-2 size-5 fill-current" />
                   )}
                   Invite to Virtual Date
                 </Button>
@@ -200,7 +201,7 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
                   <Button
                     variant="secondary"
                     size="lg"
-                    className="h-12 rounded-xl bg-secondary/60 hover:bg-secondary"
+                    className="h-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-colors"
                   >
                     <MessageCircle className="mr-2 size-4" />
                     Message
@@ -208,7 +209,7 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="h-12 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm"
+                    className="h-12 rounded-xl border-white/15 bg-transparent hover:bg-white/5 hover:border-white/20 transition-all"
                   >
                     <Calendar className="mr-2 size-4" />
                     Schedule
@@ -218,25 +219,26 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
             </div>
           </div>
 
+          {/* Right Column - Compatibility details & Bio */}
           <div className="flex flex-col gap-8 lg:col-span-7 xl:col-span-8">
             {typeof compatibility === 'number' ? (
-              <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-card to-background shadow-lg">
+              <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-[#1b1522]/60 to-[#120f1a]/80 shadow-xl rounded-[2rem] hover:border-primary/40 transition-colors">
                 <CardContent className="p-8">
                   <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                     <div className="flex flex-col gap-2">
-                      <h3 className="font-heading text-2xl font-semibold flex items-center gap-2">
-                        <Sparkles className="size-6 text-primary" />
-                        Compatibility
+                      <h3 className="font-heading text-2xl font-extrabold flex items-center gap-2 text-white">
+                        <Sparkles className="size-6 text-primary fill-current" />
+                        Compatibility Match
                       </h3>
-                      <p className="text-muted-foreground">
+                      <p className="text-muted-foreground/90 text-sm">
                         Based on shared interests and date preferences.
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className="font-heading text-4xl font-bold text-primary">
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <span className="font-heading text-4xl font-extrabold text-primary text-glow-primary">
                         {compatibility}%
                       </span>
-                      <Progress value={compatibility} className="h-2 w-32" />
+                      <Progress value={compatibility} className="h-2.5 w-36 bg-secondary/60 [&>div]:bg-primary" />
                     </div>
                   </div>
                 </CardContent>
@@ -244,9 +246,9 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
             ) : null}
 
             <div className="flex flex-col gap-4">
-              <h3 className="font-heading text-xl font-semibold">About {profile.name}</h3>
-              <Card className="bg-card/40 backdrop-blur-md">
-                <CardContent className="p-6 text-lg leading-relaxed text-card-foreground/90">
+              <h3 className="font-heading text-xl font-bold tracking-tight text-white">About {profile.name}</h3>
+              <Card className="border-white/5 bg-card/30 backdrop-blur-md rounded-2xl hover:border-white/10 transition-colors">
+                <CardContent className="p-6 text-base leading-relaxed text-muted-foreground">
                   {profile.bio || 'No bio yet.'}
                 </CardContent>
               </Card>
@@ -254,17 +256,17 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
 
             {interests.length > 0 ? (
               <div className="flex flex-col gap-6">
-                <h3 className="font-heading text-xl font-semibold">Interests & Vibe</h3>
+                <h3 className="font-heading text-xl font-bold tracking-tight text-white">Interests & Vibe</h3>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Card className="bg-card/40 backdrop-blur-md">
-                    <CardContent className="flex flex-col gap-4 p-5">
-                      <div className="flex items-center gap-2 font-medium text-muted-foreground">
-                        <Heart className="size-4" /> Passions
+                  <Card className="border-white/5 bg-card/30 backdrop-blur-md rounded-2xl">
+                    <CardContent className="flex flex-col gap-4 p-6">
+                      <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-primary">
+                        <Heart className="size-4 fill-primary" /> Passions
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {interests.map((interest) => (
-                          <Badge key={interest} variant="secondary" className="px-3 py-1 text-sm">
+                          <Badge key={interest} variant="secondary" className="bg-primary/10 text-primary border border-primary/20 px-3 py-1 font-medium hover:bg-primary/20 text-xs">
                             {interest}
                           </Badge>
                         ))}
@@ -272,14 +274,17 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-card/40 backdrop-blur-md">
-                    <CardContent className="flex flex-col gap-4 p-5">
-                      <div className="flex items-center gap-2 font-medium text-muted-foreground">
-                        <Music className="size-4" /> Interests
+                  <Card className="border-white/5 bg-card/30 backdrop-blur-md rounded-2xl">
+                    <CardContent className="flex flex-col gap-4 p-6">
+                      <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-accent">
+                        <Music className="size-4 fill-accent" /> Interests
                       </div>
-                      <div className="flex flex-col gap-2 text-sm text-foreground">
+                      <div className="flex flex-col gap-2.5 text-sm text-muted-foreground">
                         {interests.slice(0, 3).map((interest) => (
-                          <p key={interest}>• {interest}</p>
+                          <p key={interest} className="flex items-center gap-2">
+                            <span className="size-1.5 rounded-full bg-accent" />
+                            {interest}
+                          </p>
                         ))}
                       </div>
                     </CardContent>
@@ -290,32 +295,39 @@ export function MatchProfileView({ matchId }: { matchId: string }) {
 
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-heading text-xl font-semibold">Suggested Dates</h3>
-                <span className="text-sm text-muted-foreground">Pick an environment</span>
+                <h3 className="font-heading text-xl font-bold tracking-tight text-white">Suggested Dates</h3>
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Pick an environment</span>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                {suggestedEnvironments.map((env) => (
-                  <div
-                    key={env.id}
-                    onClick={() => setSelectedEnv(env.id as EnvironmentType)}
-                    className={`group relative flex cursor-pointer items-end overflow-hidden rounded-2xl border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-lg ${selectedEnv === env.id ? 'border-primary ring-2 ring-primary' : 'border-border/50'}`}
-                  >
-                    <div className="absolute inset-0 z-0">
-                      <Image
-                        src={env.image || '/placeholder.svg'}
-                        alt={env.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                {suggestedEnvironments.map((env) => {
+                  const isSelected = selectedEnv === env.id;
+                  return (
+                    <div
+                      key={env.id}
+                      onClick={() => setSelectedEnv(env.id as EnvironmentType)}
+                      className={`group relative flex cursor-pointer items-end overflow-hidden rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${
+                        isSelected 
+                          ? 'border-primary ring-2 ring-primary shadow-xl shadow-primary/10 bg-primary/5' 
+                          : 'border-white/10 bg-secondary/20 hover:border-primary/45'
+                      }`}
+                    >
+                      <div className="absolute inset-0 z-0">
+                        <Image
+                          src={env.image || '/placeholder.svg'}
+                          alt={env.name}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                      </div>
+                      <div className="relative z-10 flex w-full flex-col text-white">
+                        <span className="text-xs font-bold uppercase tracking-wider text-accent drop-shadow-sm">{env.mood}</span>
+                        <span className="font-heading text-lg font-bold tracking-tight mt-1 drop-shadow-sm">{env.name}</span>
+                      </div>
                     </div>
-                    <div className="relative z-10 flex w-full flex-col text-white">
-                      <span className="text-xs font-medium text-white/70">{env.mood}</span>
-                      <span className="font-heading text-lg font-semibold">{env.name}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

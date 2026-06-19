@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Bricolage_Grotesque } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
@@ -22,8 +23,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'dark',
-  themeColor: '#1a1a22',
+  colorScheme: 'dark light',
+  themeColor: '#151324',
 }
 
 export default function RootLayout({
@@ -34,12 +35,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${geistSans.variable} ${geistMono.variable} ${bricolage.variable} bg-background`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} bg-background`}
     >
       <body className="font-sans antialiased">
-        {children}
-        <Toaster position="top-center" />
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <ThemeProvider attribute="class" defaultTheme="dark">
+          {children}
+          <Toaster position="top-center" />
+          {process.env.NODE_ENV === 'production' && <Analytics />}
+        </ThemeProvider>
       </body>
     </html>
   )
