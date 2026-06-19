@@ -1,38 +1,107 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { invitations as apiInvitations } from '@/lib/api';
 import { enrichInvitationsWithSenders } from '@/lib/invitation-utils';
+import { useAuthStore } from '@/store/auth-store';
 import { Calendar, Inbox, Check, X, Clock, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 
 export default function InvitationsPage() {
-  const [history, setHistory] = useState<any[]>([]);
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const [invitations, setInvitations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [actioningId, setActioningId] = useState<string | null>(null);
+
+  const loadInvitations = async () => {
+    try {
+      const pendingRes = await apiInvitations.getPending();
+      console.log("INVITATIONS_API", pendingRes);
+
+      const historyRes = await apiInvitations.getHistory();
+      console.log("INVITATIONS_HISTORY", historyRes);
+
+      const pendingList = pendingRes?.invitations ?? [];
+      const historyList = Array.isArray(historyRes) ? historyRes : historyRes?.invitations || [];
+
+      // Merge both datasets by invitation ID
+      const combinedMap = new Map();
+      pendingList.forEach((item: any) => combinedMap.set(item.id, item));
+      historyList.forEach((item: any) => {
+        if (!combinedMap.has(item.id)) {
+          combinedMap.set(item.id, item);
+        }
+      });
+      const combinedList = Array.from(combinedMap.values());
+
+      // Render pending invitations immediately (without blocking on sender profiles)
+      setInvitations(combinedList);
+
+      // Perform sender enrichment asynchronously
+      enrichInvitationsWithSenders(combinedList).then((enriched) => {
+        setInvitations(enriched);
+      }).catch((err) => {
+        console.error("Enrichment failed:", err);
+      });
+
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to load invitations');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadHistory() {
-      try {
-        const res = await apiInvitations.getHistory();
-        const rawList = Array.isArray(res) ? res : res?.invitations || [];
-        const enriched = await enrichInvitationsWithSenders(rawList);
-        setHistory(enriched);
-      } catch (err: any) {
-        toast.error(err.message || 'Failed to load invitation history');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadHistory();
+    loadInvitations();
   }, []);
 
-  const pendingList = history.filter((inv) => inv.status === 'pending');
-  const acceptedList = history.filter((inv) => inv.status === 'accepted');
-  const rejectedList = history.filter((inv) => inv.status === 'rejected');
+  useEffect(() => {
+    console.log("INVITATIONS_STATE", invitations);
+  }, [invitations]);
+
+  useEffect(() => {
+    console.log("CURRENT_USER", user);
+  }, [user]);
+
+  const handleAccept = async (id: string) => {
+    setActioningId(id);
+    try {
+      const res = await apiInvitations.accept(id);
+      toast.success('Invitation accepted!');
+      await loadInvitations();
+      if (res?.roomId) {
+        router.push(`/dashboard/date/${res.roomId}`);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to accept invitation');
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    setActioningId(id);
+    try {
+      await apiInvitations.reject(id);
+      toast.success('Invitation declined');
+      await loadInvitations();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to decline invitation');
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  const pendingList = invitations.filter((inv) => inv.status === 'pending');
+  const acceptedList = invitations.filter((inv) => inv.status === 'accepted');
+  const rejectedList = invitations.filter((inv) => inv.status === 'rejected');
 
   const renderInvitationCard = (inv: any) => {
     const dateStr = inv.createdAt 
@@ -47,9 +116,11 @@ export default function InvitationsPage() {
       rejected: 'bg-red-500/10 text-red-500 border-red-500/20',
     };
 
+    const isPending = inv.status === 'pending';
+
     return (
       <Card key={inv.id} className="bg-card/60 backdrop-blur-sm border-border/50 hover:border-primary/40 transition-colors">
-        <CardContent className="p-5 flex items-center justify-between gap-4">
+        <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <Avatar className="size-12 border border-border/50 shrink-0">
               <AvatarImage src={inv.sender?.avatar || undefined} alt={inv.sender?.name} />
@@ -69,9 +140,34 @@ export default function InvitationsPage() {
               </div>
             </div>
           </div>
-          <Badge className={`capitalize shrink-0 border ${statusColors[inv.status] || ''}`} variant="outline">
-            {inv.status}
-          </Badge>
+          
+          <div className="flex items-center gap-2">
+            {isPending ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-destructive/30 hover:bg-destructive/10 hover:text-destructive h-9 px-3" 
+                  onClick={() => handleReject(inv.id)} 
+                  disabled={actioningId !== null}
+                >
+                  <X className="size-4 mr-1" /> Decline
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="h-9 px-4 shadow-md shadow-primary/20" 
+                  onClick={() => handleAccept(inv.id)} 
+                  disabled={actioningId !== null}
+                >
+                  <Check className="size-4 mr-1" /> Accept
+                </Button>
+              </>
+            ) : (
+              <Badge className={`capitalize shrink-0 border ${statusColors[inv.status] || ''}`} variant="outline">
+                {inv.status}
+              </Badge>
+            )}
+          </div>
         </CardContent>
       </Card>
     );
