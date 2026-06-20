@@ -6,6 +6,7 @@ import { MessageCircleHeart, Send, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -31,8 +32,8 @@ export default function ChatsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
       <div className="flex flex-col space-y-2">
-        <h1 className="font-heading text-3xl font-extrabold tracking-tight flex items-center gap-3 text-foreground">
-          <MessageCircleHeart className="size-8 text-primary" />
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight flex items-center gap-3 text-white">
+          <MessageCircleHeart className="size-8 text-primary animate-pulse" />
           My Chats
         </h1>
         <p className="text-muted-foreground text-base md:text-lg">
@@ -86,20 +87,13 @@ export default function ChatsPage() {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-16 px-6 text-center border border-border rounded-3xl bg-card shadow-sm max-w-md mx-auto">
-          <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center mb-5 border border-primary/20">
-            <MessageCircleHeart className="size-7 text-primary" />
-          </div>
-          <h3 className="text-xl font-bold text-foreground mb-2">No conversations yet</h3>
-          <p className="text-muted-foreground/90 max-w-sm text-sm mb-6">
-            When you match and message someone, your active conversations will show up here. Let's find your first match!
-          </p>
-          <Link href="/dashboard/discover" passHref>
-            <Button className="h-10 px-5 bg-primary text-primary-foreground font-semibold rounded-xl transition-all duration-200">
-              Find Connections
-            </Button>
-          </Link>
-        </div>
+        <EmptyState
+          icon={MessageCircleHeart}
+          title="No conversations yet"
+          description="When you match and message someone, your active conversations will show up here. Let's find your first match!"
+          actionText="Find Connections"
+          actionHref="/dashboard/discover"
+        />
       )}
     </div>
   );

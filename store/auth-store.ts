@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { auth, users } from '@/lib/api';
 import { toast } from 'sonner';
+import { useRoomStore } from '@/components/onboarding/room-store';
+import { useChatStore } from '@/components/onboarding/chat-store';
+import { useNotificationStore } from '@/store/notification-store';
 
 interface User {
   id: string;
@@ -16,12 +19,14 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasHydrated: boolean;
   login: (credentials: any) => Promise<void>;
   signup: (credentials: any) => Promise<void>;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -31,9 +36,11 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       isLoading: true,
+      hasHydrated: false,
 
       setUser: (user) => set({ user, isAuthenticated: !!user, isLoading: false }),
       setToken: (token) => set({ token }),
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
 
       login: async (credentials) => {
         const { token } = await auth.login(credentials);
@@ -71,6 +78,11 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== 'undefined') {
           localStorage.removeItem('userId');
         }
+        // Clean up other store states to prevent session leak
+        useRoomStore.setState({ currentRoom: null, members: [], loading: false });
+        useChatStore.getState().clearMessages();
+        useNotificationStore.getState().clearNotifications();
+
         set({ user: null, token: null, isAuthenticated: false, isLoading: false });
         toast.info("You have been logged out.");
       },
@@ -79,6 +91,9 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage', 
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ token: state.token }), 
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      }
     }
   )
 );

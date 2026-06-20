@@ -6,10 +6,12 @@ import { useAuthStore } from '@/store/auth-store';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { token, isAuthenticated, user, fetchCurrentUser } = useAuthStore();
+  const { token, user, fetchCurrentUser, hasHydrated } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     async function hydrateAuth() {
       if (!token) {
         router.push('/login');
@@ -27,10 +29,18 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       }
     }
     hydrateAuth();
-  }, [token, isAuthenticated, user, fetchCurrentUser, router]);
+  }, [token, user, fetchCurrentUser, router, hasHydrated]);
 
-  if (isChecking) {
-    return <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">Loading...</div>;
+  if (!hasHydrated || isChecking) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#120f1a] text-foreground">
+        <div className="relative flex items-center justify-center mb-4">
+          <div className="absolute size-12 rounded-full border-4 border-primary/20 animate-ping" />
+          <div className="size-12 rounded-full border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+        </div>
+        <p className="text-sm font-semibold tracking-wider text-muted-foreground/80 animate-pulse">Securing session...</p>
+      </div>
+    );
   }
 
   return <>{children}</>;
