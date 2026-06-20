@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { EmptyState } from '@/components/dashboard/empty-state'
 import { users } from '@/lib/api'
 import type { ApiUser } from '@/lib/types/api'
 
@@ -131,13 +132,13 @@ export function DiscoverView() {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-border rounded-3xl bg-card shadow-sm">
-          <UserRound className="size-12 text-primary/40 mb-4" />
-          <h3 className="text-xl font-bold text-foreground mb-2">No users available yet</h3>
-          <p className="text-muted-foreground/80 max-w-sm text-sm">
-            Check back soon for new people to connect with.
-          </p>
-        </div>
+        <EmptyState
+          icon={Compass}
+          title="No users available yet"
+          description="Check back soon for new people to connect with and explore virtual dates."
+          actionText="Refresh List"
+          onClick={loadDiscoverUsers}
+        />
       )}
     </div>
   )

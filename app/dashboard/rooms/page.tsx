@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { rooms } from '@/lib/api';
-import { Video, Calendar, ArrowRight, Play } from 'lucide-react';
+import { Video, Play } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -32,7 +33,7 @@ export default function RoomsPage() {
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
       <div className="flex flex-col space-y-2">
         <h1 className="font-heading text-3xl font-extrabold tracking-tight flex items-center gap-3 text-white">
-          <Video className="size-8 text-primary" />
+          <Video className="size-8 text-primary animate-pulse" />
           Active Rooms
         </h1>
         <p className="text-muted-foreground text-base md:text-lg">
@@ -85,13 +86,13 @@ export default function RoomsPage() {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-white/10 rounded-3xl bg-card/5">
-          <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Video className="size-8 text-primary/60" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">No active rooms</h3>
-          <p className="text-muted-foreground/80 max-w-sm text-sm">When an invitation is accepted, an active virtual date room will be created here.</p>
-        </div>
+        <EmptyState
+          icon={Video}
+          title="No active rooms"
+          description="When an invitation is accepted, an active virtual date room will be created here."
+          actionText="View Invitations"
+          actionHref="/dashboard/invitations"
+        />
       )}
     </div>
   );

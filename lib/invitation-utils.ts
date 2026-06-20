@@ -33,3 +33,44 @@ export async function enrichInvitationsWithSenders(
     }
   })
 }
+
+export async function enrichInvitations(
+  invitations: ApiInvitation[],
+  currentUserId: string,
+): Promise<EnrichedInvitation[]> {
+  const otherUserIds = [
+    ...new Set(
+      invitations.map((inv) =>
+        inv.senderId === currentUserId ? inv.receiverId : inv.senderId
+      )
+    )
+  ]
+
+  const profiles = await Promise.all(
+    otherUserIds.map((id) =>
+      users.getProfile(id).catch(() => null),
+    ),
+  )
+
+  const profilesById = new Map(
+    otherUserIds
+      .map((id, index) => [id, profiles[index]] as const)
+      .filter(([, profile]) => profile != null),
+  )
+
+  return invitations.map((invitation) => {
+    const otherId = invitation.senderId === currentUserId ? invitation.receiverId : invitation.senderId
+    const otherUser = profilesById.get(otherId)
+    return {
+      ...invitation,
+      sender: otherUser
+        ? {
+            id: otherUser.id,
+            name: otherUser.name,
+            avatar: otherUser.avatar ?? undefined,
+            bio: otherUser.bio,
+          }
+        : undefined,
+    }
+  })
+}

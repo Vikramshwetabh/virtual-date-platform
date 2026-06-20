@@ -5,6 +5,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { Separator } from "@/components/ui/separator"
 import { AuthGuard } from "@/components/auth/auth-guard"
 import { GlobalSocketListener } from "@/app/signup/global-socket-listener"
+import { NotificationCenter } from "@/components/dashboard/notification-center"
+import { ActiveRoomBanner } from "@/components/dashboard/active-room-banner"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,13 +14,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SidebarProvider>
         <GlobalSocketListener />
         <AppSidebar />
-        <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-md">
-            <SidebarTrigger />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <span className="text-sm text-muted-foreground">Find your next connection</span>
+        <SidebarInset className="flex flex-col min-h-screen">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <span className="text-sm text-muted-foreground">Find your next connection</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <NotificationCenter />
+            </div>
           </header>
-          <div className="flex-1 p-4 md:p-6">{children}</div>
+          <ActiveRoomBanner />
+          <div className="flex-1 p-4 md:p-6 bg-background/50">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </AuthGuard>

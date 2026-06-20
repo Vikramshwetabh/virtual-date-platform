@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { invitations as apiInvitations } from '@/lib/api';
-import { enrichInvitationsWithSenders } from '@/lib/invitation-utils';
+import { enrichInvitations } from '@/lib/invitation-utils';
 import { useAuthStore } from '@/store/auth-store';
 import { Calendar, Inbox, Check, X, Clock, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +21,7 @@ export default function InvitationsPage() {
   const [actioningId, setActioningId] = useState<string | null>(null);
 
   const loadInvitations = async () => {
+    if (!user?.id) return;
     try {
       const pendingRes = await apiInvitations.getPending();
       console.log("INVITATIONS_API", pendingRes);
@@ -44,8 +45,8 @@ export default function InvitationsPage() {
       // Render pending invitations immediately (without blocking on sender profiles)
       setInvitations(combinedList);
 
-      // Perform sender enrichment asynchronously
-      enrichInvitationsWithSenders(combinedList).then((enriched) => {
+      // Perform sender/receiver enrichment asynchronously based on user.id
+      enrichInvitations(combinedList, user.id).then((enriched) => {
         setInvitations(enriched);
       }).catch((err) => {
         console.error("Enrichment failed:", err);
@@ -59,8 +60,10 @@ export default function InvitationsPage() {
   };
 
   useEffect(() => {
-    loadInvitations();
-  }, []);
+    if (user?.id) {
+      loadInvitations();
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     console.log("INVITATIONS_STATE", invitations);
@@ -72,14 +75,23 @@ export default function InvitationsPage() {
 
   const handleAccept = async (id: string) => {
     setActioningId(id);
+    // Optimistic UI update
+    setInvitations((prev) =>
+      prev.map((inv) => (inv.id === id ? { ...inv, status: 'accepted' } : inv))
+    );
     try {
       const res = await apiInvitations.accept(id);
       toast.success('Invitation accepted!');
-      await loadInvitations();
       if (res?.roomId) {
         router.push(`/dashboard/date/${res.roomId}`);
+      } else {
+        await loadInvitations();
       }
     } catch (error: any) {
+      // Revert on error
+      setInvitations((prev) =>
+        prev.map((inv) => (inv.id === id ? { ...inv, status: 'pending' } : inv))
+      );
       toast.error(error.message || 'Failed to accept invitation');
     } finally {
       setActioningId(null);
@@ -88,11 +100,19 @@ export default function InvitationsPage() {
 
   const handleReject = async (id: string) => {
     setActioningId(id);
+    // Optimistic UI update
+    setInvitations((prev) =>
+      prev.map((inv) => (inv.id === id ? { ...inv, status: 'rejected' } : inv))
+    );
     try {
       await apiInvitations.reject(id);
       toast.success('Invitation declined');
       await loadInvitations();
     } catch (error: any) {
+      // Revert on error
+      setInvitations((prev) =>
+        prev.map((inv) => (inv.id === id ? { ...inv, status: 'pending' } : inv))
+      );
       toast.error(error.message || 'Failed to decline invitation');
     } finally {
       setActioningId(null);
@@ -117,6 +137,7 @@ export default function InvitationsPage() {
     };
 
     const isPending = inv.status === 'pending';
+    const isSentByMe = inv.senderId === user?.id;
 
     return (
       <Card key={inv.id} className="group overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-[#1b1522]/50 via-card/30 to-[#120f1a]/80 shadow-lg hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-0.5 animate-fade-in-up">
@@ -130,7 +151,7 @@ export default function InvitationsPage() {
             </div>
             <div className="min-w-0 space-y-1">
               <h4 className="font-bold text-white text-base truncate group-hover:text-primary transition-colors">
-                {inv.sender?.name || 'Someone'}
+                {isSentByMe ? `Sent to ${inv.sender?.name || 'Someone'}` : `Received from ${inv.sender?.name || 'Someone'}`}
               </h4>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground/80">
                 <span className="flex items-center gap-1.5 font-medium">
@@ -145,25 +166,36 @@ export default function InvitationsPage() {
           
           <div className="flex items-center gap-2">
             {isPending ? (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="border-white/10 hover:bg-white/5 hover:text-white rounded-xl h-9 px-3.5 font-semibold transition-all duration-200" 
-                  onClick={() => handleReject(inv.id)} 
-                  disabled={actioningId !== null}
-                >
-                  <X className="size-4 mr-1" /> Decline
-                </Button>
-                <Button 
-                  size="sm" 
-                  className="h-9 px-4 bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold shadow-md shadow-primary/20 rounded-xl transition-all duration-200" 
-                  onClick={() => handleAccept(inv.id)} 
-                  disabled={actioningId !== null}
-                >
-                  <Check className="size-4 mr-1" /> Accept
-                </Button>
-              </>
+              isSentByMe ? (
+                <Badge className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1.5 font-semibold shadow-[0_0_8px_rgba(234,179,8,0.1)] capitalize" variant="outline">
+                  Awaiting response
+                </Badge>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-white/10 hover:bg-white/5 hover:text-white rounded-xl h-9 px-3.5 font-semibold transition-all duration-200" 
+                    onClick={() => handleReject(inv.id)} 
+                    disabled={actioningId !== null}
+                  >
+                    <X className="size-4 mr-1" /> Decline
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="h-9 px-4 bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold shadow-md shadow-primary/20 rounded-xl transition-all duration-200" 
+                    onClick={() => handleAccept(inv.id)} 
+                    disabled={actioningId !== null}
+                  >
+                    {actioningId === inv.id ? (
+                      <span className="animate-spin mr-1">⏳</span>
+                    ) : (
+                      <Check className="size-4 mr-1" />
+                    )}
+                    Accept
+                  </Button>
+                </>
+              )
             ) : (
               <Badge className={`capitalize shrink-0 border px-3 py-1 font-semibold ${statusColors[inv.status] || ''}`} variant="outline">
                 {inv.status}

@@ -25,10 +25,15 @@ export function normalizeWebSocketMessage(message: WebSocketMessage): DisplayCha
     return null
   }
 
+  // Persist the generated id on the message object itself to make it stable across renders
+  if (!(message as any)._normalizedId) {
+    (message as any)._normalizedId = message.payload?.id || message.timestamp || `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  }
+
   const result = {
-    id: message.payload?.id || `${message.timestamp || Date.now()}-${userId}`,
+    id: (message as any)._normalizedId,
     userId: userId,
-    content: message.payload?.content || '',
+    content: message.payload?.content || message.content || '',
   };
   console.log("4. normalizeWebSocketMessage output:", result);
   return result;

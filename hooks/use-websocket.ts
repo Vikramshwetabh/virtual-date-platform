@@ -85,5 +85,5 @@ export function useWebSocket(roomId?: string) {
     }
   }, [roomId]);
 
-  return { connected, messages, send };
+  return { connected, messages, send, reconnect: connect };
 }
