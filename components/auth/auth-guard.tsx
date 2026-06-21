@@ -6,14 +6,14 @@ import { useAuthStore } from '@/store/auth-store';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { token, user, fetchCurrentUser, hasHydrated } = useAuthStore();
+  const { token, refreshToken, user, fetchCurrentUser, hasHydrated } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     if (!hasHydrated) return;
 
     async function hydrateAuth() {
-      if (!token) {
+      if (!token && !useAuthStore.getState().refreshToken) {
         router.push('/login');
       } else {
         if (!user) {
@@ -21,7 +21,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             await fetchCurrentUser();
           } catch (err) {
             console.error("Auth hydration failed:", err);
-            router.push('/login');
+            // Don't push to login immediately, let auth store handle logout/redirect if it's 401
             return;
           }
         }
@@ -29,7 +29,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       }
     }
     hydrateAuth();
-  }, [token, user, fetchCurrentUser, router, hasHydrated]);
+  }, [token, refreshToken, user, fetchCurrentUser, router, hasHydrated]);
 
   if (!hasHydrated || isChecking) {
     return (

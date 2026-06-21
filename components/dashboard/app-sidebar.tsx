@@ -32,7 +32,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const mainNav = [
+type NavItem = { title: string; href: string; icon: React.ElementType; badge?: string | number };
+
+const mainNav: NavItem[] = [
   { title: "Discover", href: "/dashboard/discover", icon: Home },
   { title: "My Matches", href: "/dashboard/my-matches", icon: Heart },
   { title: "My Chats", href: "/dashboard/chats", icon: MessageCircleHeart },

@@ -33,7 +33,7 @@ export function normalizeWebSocketMessage(message: WebSocketMessage): DisplayCha
   const result = {
     id: (message as any)._normalizedId,
     userId: userId,
-    content: message.payload?.content || message.content || '',
+    content: message.payload?.content || (message as any).content || '',
   };
   console.log("4. normalizeWebSocketMessage output:", result);
   return result;

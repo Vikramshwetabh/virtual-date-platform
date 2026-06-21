@@ -2,16 +2,26 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNotificationStore } from '@/store/notification-store';
+import { useAuthStore } from '@/store/auth-store';
+import { EmptyNotifications } from '@/components/dashboard/empty-notifications';
 import { Bell, Heart, Calendar, Video, Trash2, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export function NotificationCenter() {
-  const { notifications, markAsRead, markAllAsRead, clearNotifications } = useNotificationStore();
+  const { notifications, fetchNotifications, markAsRead, markAllAsRead, clearNotifications } = useNotificationStore();
+  const { isAuthenticated } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  // Fetch notifications on mount if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchNotifications();
+    }
+  }, [isAuthenticated, fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -147,13 +157,7 @@ export function NotificationCenter() {
                 </div>
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                <div className="size-11 rounded-2xl bg-secondary/30 flex items-center justify-center mb-3.5 border border-white/5 text-muted-foreground/60">
-                  <Bell className="size-5.5" />
-                </div>
-                <h5 className="font-bold text-white text-sm">All caught up!</h5>
-                <p className="text-xs text-muted-foreground/70 max-w-xs mt-1">You have no new notifications.</p>
-              </div>
+              <EmptyNotifications />
             )}
           </div>
         </div>
