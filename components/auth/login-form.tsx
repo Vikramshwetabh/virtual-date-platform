@@ -126,9 +126,14 @@ export function LoginForm() {
 
         {unverifiedEmail && (
           <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-center animate-in fade-in zoom-in duration-300">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <AlertCircle className="size-4 text-amber-500" />
-              <p className="text-sm font-semibold text-amber-500">Verify your email before logging in.</p>
+            <div className="flex flex-col items-center justify-center gap-1.5 mb-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="size-4 text-amber-500" />
+                <p className="text-sm font-semibold text-amber-500">Verify your email before logging in.</p>
+              </div>
+              <p className="text-xs text-amber-500/80">
+                Have an OTP? <Link href="/verify-email" className="font-bold underline hover:text-amber-400">Enter OTP Code</Link>
+              </p>
             </div>
             <Button 
               type="button" 

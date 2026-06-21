@@ -40,8 +40,8 @@ export function SignupForm() {
     setIsLoading(true);
     try {
       await signup(data);
-      toast.success('Account created successfully! Please log in.');
-      router.push('/login');
+      toast.success('Account created successfully! Please check your email for the 6-digit OTP code.');
+      router.push('/verify-email');
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
     } finally {
