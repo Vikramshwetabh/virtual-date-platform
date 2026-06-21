@@ -19,7 +19,20 @@ export class ApiError extends Error {
 
 async function fetchApi<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { data, headers: customHeaders, ...customOptions } = options;
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  let token = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const authStorage = localStorage.getItem('auth-storage');
+      if (authStorage) {
+        token = JSON.parse(authStorage).state.token;
+      }
+    } catch (e) {
+      console.error('Failed to parse auth token', e);
+    }
+    if (!token) {
+      token = localStorage.getItem('token');
+    }
+  }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
