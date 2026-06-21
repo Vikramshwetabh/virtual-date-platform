@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { AlertCircle } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -19,15 +20,17 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
-  const { login, fetchCurrentUser } = useAuthStore();
+  const { login, fetchCurrentUser, resendVerification } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema as any),
     defaultValues: {
       email: '',
       password: '',
@@ -36,15 +39,32 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
+    setUnverifiedEmail('');
     try {
       await login(data);
       await fetchCurrentUser(); // This will now be called after token is set
       toast.success('Logged in successfully!');
       router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to log in');
+      if (error.message?.toLowerCase().includes('not verified') || error.status === 403) {
+        setUnverifiedEmail(data.email);
+      } else {
+        toast.error(error.message || 'Failed to log in');
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setIsResending(true);
+    try {
+      await resendVerification(unverifiedEmail);
+      toast.success('Verification email sent! Please check your inbox.');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to resend verification email');
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -89,6 +109,9 @@ export function LoginForm() {
             <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Password
             </label>
+            <Link href="/forgot-password" className="text-[10px] font-bold text-primary hover:text-accent hover:underline transition-colors">
+              Forgot password?
+            </Link>
           </div>
           <input
             id="password"
@@ -100,6 +123,23 @@ export function LoginForm() {
           />
           {errors.password && <p className="text-xs text-red-400 mt-1 font-medium">{errors.password.message}</p>}
         </div>
+
+        {unverifiedEmail && (
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-center animate-in fade-in zoom-in duration-300">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <AlertCircle className="size-4 text-amber-500" />
+              <p className="text-sm font-semibold text-amber-500">Verify your email before logging in.</p>
+            </div>
+            <Button 
+              type="button" 
+              onClick={handleResend}
+              disabled={isResending}
+              className="h-9 w-full border-amber-500/30 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 text-xs font-bold rounded-lg"
+            >
+              {isResending ? 'Sending...' : 'Resend Verification Email'}
+            </Button>
+          </div>
+        )}
 
         <Button type="submit" className="w-full h-11 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold hover:opacity-95 shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]" disabled={isLoading}>
           {isLoading ? (

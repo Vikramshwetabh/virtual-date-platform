@@ -27,12 +27,8 @@ import {
 import { feedback } from "@/lib/api";
 
 const feedbackSchema = z.object({
-  enjoyedDate: z.enum(["yes", "no"], {
-    required_error: "Please select an option.",
-  }),
-  secondDateChoice: z.enum(["yes", "maybe", "no"], {
-    required_error: "Please select if you'd like a second date.",
-  }),
+  enjoyedDate: z.enum(["yes", "no"]),
+  secondDateChoice: z.enum(["yes", "maybe", "no"]),
 });
 
 type FeedbackFormValues = z.infer<typeof feedbackSchema>;
@@ -53,7 +49,7 @@ export function FeedbackModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FeedbackFormValues>({
-    resolver: zodResolver(feedbackSchema),
+    resolver: zodResolver(feedbackSchema as any),
   });
 
   const onSubmit = async (data: FeedbackFormValues) => {
@@ -75,7 +71,7 @@ export function FeedbackModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Rate Your Date</DialogTitle>
           <DialogDescription>

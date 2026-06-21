@@ -6,18 +6,18 @@ import { useAuthStore } from '@/store/auth-store';
 
 export function GuestGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { token, isAuthenticated, hasHydrated } = useAuthStore();
+  const { token, refreshToken, isAuthenticated, hasHydrated } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     if (!hasHydrated) return;
 
-    if (token || isAuthenticated) {
+    if (token || refreshToken || isAuthenticated) {
       router.push('/dashboard');
     } else {
       setIsChecking(false);
     }
-  }, [token, isAuthenticated, router, hasHydrated]);
+  }, [token, refreshToken, isAuthenticated, router, hasHydrated]);
 
   if (!hasHydrated || isChecking) {
     return (

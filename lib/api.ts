@@ -15,12 +15,24 @@ import type {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://virtual-date-api.onrender.com/api/v1";
 
 let isRedirecting = false;
+let isRefreshing = false;
+let failedQueue: { resolve: (token: string) => void; reject: (err: any) => void }[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token as string);
+    }
+  });
+  failedQueue = [];
+};
 
 /**
  * Core API request wrapper
  */
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  // Safely access localStorage in SSR environments (Next.js)
   let token = null;
   if (typeof window !== "undefined") {
     try {
@@ -30,54 +42,98 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
       }
     } catch (e) {
       console.error("Failed to parse auth token", e);
-      localStorage.removeItem("auth-storage");
-      localStorage.removeItem("userId");
-      if (!isRedirecting && typeof window !== "undefined") {
-        isRedirecting = true;
-        toast.error("Session corrupted. Please log in again.");
-        window.location.href = "/login";
-      }
     }
   }
-  const headers: HeadersInit = {
+
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+  let res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
 
-  // Handle error responses
   if (!res.ok) {
     let errorMessage = `API error: ${res.status}`;
     try {
       const errorData = await res.json();
       errorMessage = errorData.error || errorData.message || errorMessage;
-    } catch (e) {
-      // Ignore JSON parse errors for non-JSON error responses
-    }
+    } catch (e) {}
     
-    if (res.status === 401) {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("auth-storage");
-        localStorage.removeItem("userId");
-        if (!isRedirecting) {
-          isRedirecting = true;
-          toast.error("Session expired, please log in again.");
-          window.location.href = "/login";
+    if (res.status === 401 && !endpoint.includes("/auth/refresh") && !endpoint.includes("/auth/login")) {
+      const authStorageStr = typeof window !== "undefined" ? localStorage.getItem("auth-storage") : null;
+      if (authStorageStr) {
+        const authData = JSON.parse(authStorageStr).state;
+        const refreshToken = authData.refreshToken;
+
+        if (refreshToken) {
+          if (isRefreshing) {
+            try {
+              const newToken = await new Promise<string>((resolve, reject) => {
+                failedQueue.push({ resolve, reject });
+              });
+              const newOptions = { ...options };
+              newOptions.headers = { ...newOptions.headers, "Authorization": `Bearer ${newToken}` };
+              return apiRequest<T>(endpoint, newOptions);
+            } catch (err) {
+              const error = new Error(errorMessage) as any;
+              error.status = 401;
+              throw error;
+            }
+          }
+
+          isRefreshing = true;
+
+          try {
+            const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ refresh_token: refreshToken })
+            });
+
+            if (refreshRes.ok) {
+              const refreshData = await refreshRes.json();
+              const newToken = refreshData.token;
+              const newRefreshToken = refreshData.refresh_token || refreshData.refreshToken;
+
+              authData.token = newToken;
+              if (newRefreshToken) authData.refreshToken = newRefreshToken;
+              
+              const parsedStorage = JSON.parse(authStorageStr);
+              parsedStorage.state = authData;
+              localStorage.setItem("auth-storage", JSON.stringify(parsedStorage));
+
+              processQueue(null, newToken);
+
+              const newOptions = { ...options };
+              newOptions.headers = { ...newOptions.headers, "Authorization": `Bearer ${newToken}` };
+              return apiRequest<T>(endpoint, newOptions);
+            } else {
+              processQueue(new Error("Refresh failed"), null);
+            }
+          } catch (e) {
+            processQueue(e, null);
+          } finally {
+            isRefreshing = false;
+          }
         }
       }
+
+      if (typeof window !== "undefined") {
+        import('@/store/auth-store').then(({ useAuthStore }) => {
+          useAuthStore.getState().setIsSessionExpired(true);
+        });
+      }
     }
-    
+
     const error = new Error(errorMessage) as any;
     error.status = res.status;
     throw error;
   }
 
-  // Handle empty responses (204 No Content or endpoints with no body)
   if (res.status === 204) return null as T;
 
   const text = await res.text();
@@ -88,7 +144,25 @@ export const auth = {
   signup: (data: Record<string, any>) => 
     apiRequest("/auth/signup", { method: "POST", body: JSON.stringify(data) }),
   login: (data: Record<string, any>) => 
-    apiRequest<{ token: string }>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
+    apiRequest<{ token: string, refresh_token: string }>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
+  verifyEmail: (data: { token: string }) =>
+    apiRequest("/auth/verify-email", { method: "POST", body: JSON.stringify(data) }),
+  forgotPassword: (data: { email: string }) =>
+    apiRequest("/auth/forgot-password", { method: "POST", body: JSON.stringify(data) }),
+  resetPassword: (data: { token: string, new_password: string }) =>
+    apiRequest("/auth/reset-password", { method: "POST", body: JSON.stringify(data) }),
+  refresh: (data: { refresh_token: string }) =>
+    apiRequest<{ token: string, refresh_token: string }>("/auth/refresh", { method: "POST", body: JSON.stringify(data) }),
+  logout: (data: { refresh_token: string }) =>
+    apiRequest("/auth/logout", { method: "POST", body: JSON.stringify(data) }),
+  resendVerification: (data: { email: string }) =>
+    apiRequest("/auth/resend-verification", { method: "POST", body: JSON.stringify(data) }),
+  changePassword: (data: { old_password: string, new_password: string }) =>
+    apiRequest("/auth/change-password", { method: "POST", body: JSON.stringify(data) }),
+  getSessions: () =>
+    apiRequest<any[]>("/auth/sessions"),
+  revokeSession: (data: { session_id: string }) =>
+    apiRequest("/auth/sessions/revoke", { method: "POST", body: JSON.stringify(data) }),
 };
 
 export const users = {
@@ -150,6 +224,10 @@ export const invitations = {
 export const analytics = {
   recordEvent: (data: { eventName: string, metadata?: Record<string, any> }) => 
     apiRequest("/analytics/events", { method: "POST", body: JSON.stringify(data) }),
+};
+
+export const notifications = {
+  get: () => apiRequest<any[]>("/notifications"),
 };
 
 export const system = {

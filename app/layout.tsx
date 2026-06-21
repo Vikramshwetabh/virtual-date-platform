@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Bricolage_Grotesque } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/theme-provider'
+import { SessionExpiredModal } from '@/components/auth/session-expired-modal'
 import './globals.css'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
@@ -42,6 +43,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark">
           {children}
           <Toaster position="top-center" />
+          <SessionExpiredModal />
           {process.env.NODE_ENV === 'production' && <Analytics />}
         </ThemeProvider>
       </body>
